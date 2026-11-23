@@ -27,7 +27,7 @@ automation: !include automations.yaml
 template:
   # Fläche – Sonneneinfall, minimal
   - use_blueprint:
-      path: dachfenster/gibt_es_nicht.yaml
+      path: dachfenster/flaeche_sonneneinfall.yaml
       input:
         azimut: 180
         neigung: 40

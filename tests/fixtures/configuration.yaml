@@ -4,10 +4,15 @@
 #
 # Template-Blueprints werden unten unter "template:" mit "use_blueprint:"
 # eingebunden, je eine minimale und eine vollständig belegte Instanz (Skill
-# neuer-blueprint). Achtung: Fehler in einer Template-Instanz machen die CI
-# nicht rot – Schemafehler verwirft HA still, Ladefehler (falscher path,
-# fehlende Pflichteingabe) sind nur Warnungen (Skill sonnengeometrie,
-# Abschnitt 5). Die Tests in tests/test_struktur.py sind die Sicherung.
+# neuer-blueprint). Achtung: Schemafehler einer Template-Instanz verwirft HA
+# still, die CI bleibt grün. Ladefehler (falscher path, fehlende
+# Pflichteingabe) sind nur Warnungen; rot werden sie, weil die CI mit
+# --fail-on-warnings prüft (Skill sonnengeometrie, Abschnitt 5). Die Tests in
+# tests/test_struktur.py sind die Sicherung.
+#
+# Wegen --fail-on-warnings macht jede Warnung die CI rot. Bringt default_config
+# in der CI eigene Warnungen mit, hier auf die nötigen Integrationen
+# verkleinern – Warnungen nicht unterdrücken (docs/ENTWURF.md 6.1).
 default_config:
 
 automation: !include automations.yaml

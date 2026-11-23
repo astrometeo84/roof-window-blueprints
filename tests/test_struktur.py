@@ -26,6 +26,7 @@ PAKET = CONFIG["packages"]["."]
 MANIFEST = json.loads((REPO / ".release-please-manifest.json").read_text(encoding="utf-8"))
 VERSION_ZEILE = re.compile(r"^#\s*Version:\s*(\S+)\s*#\s*x-release-please-version\s*$", re.MULTILINE)
 RELEASE_WORKFLOW = REPO / ".github" / "workflows" / "release-please.yml"
+VALIDATE_WORKFLOW = REPO / ".github" / "workflows" / "validate.yml"
 
 # Präfixe, die im CHANGELOG erscheinen und damit einen Release-PR auslösen.
 # Äußere Vorgabe aus docs/ENTWURF.md 6.3 und CLAUDE.md, daher hier einmal
@@ -196,6 +197,36 @@ def test_release_workflow_haengt_alle_blueprints_per_muster_an():
     assert "blueprints/**/*.yaml" in text
     assert "globstar" in text, "ohne 'shopt -s globstar' passt ** nur auf eine Ordnerebene"
     assert not re.search(r"blueprints/(automation|template)/\S+\.yaml", text), "feste Liste gefunden"
+
+
+@pytest.mark.skipif(not VALIDATE_WORKFLOW.is_file(), reason="Workflow legt der Nutzer an")
+def test_ha_job_prueft_mit_fail_on_warnings():
+    """Ohne den Schalter bleibt der HA-Job bei Ladefehlern grün (docs/ENTWURF.md 6.1)."""
+    # Nur Befehle zählen: Die Kommentare im Workflow nennen dieselben Begriffe.
+    text = "\n".join(z for z in VALIDATE_WORKFLOW.read_text(encoding="utf-8").splitlines()
+                     if not z.lstrip().startswith("#"))
+    assert re.search(r"--script\s+check_config\s+--fail-on-warnings", text)
+    aufrufe = re.findall(r"docker run[^\n]*", text)
+    assert aufrufe
+    for aufruf in aufrufe:
+        assert '--entrypoint ""' in aufruf, f"ohne leeren Entrypoint startet das Image HA selbst: {aufruf}"
+    assert "secrets.yaml ha/" in text, "secrets.yaml hat früher die Action kopiert"
+    assert not re.search(r"uses:\s*frenck/action-home-assistant", text), \
+        "die Action reicht --fail-on-warnings nicht durch"
+
+
+WORKFLOWS = [w for w in (VALIDATE_WORKFLOW, RELEASE_WORKFLOW) if w.is_file()]
+
+
+@pytest.mark.skipif(not WORKFLOWS, reason="Workflows legt der Nutzer an")
+@pytest.mark.parametrize("workflow", WORKFLOWS, ids=lambda w: w.name)
+def test_setup_uv_mit_vollstaendiger_version(workflow):
+    """setup-uv hat seit v8 keine Major-Tags mehr; @v10 gäbe es nicht (docs/ENTWURF.md 6.5)."""
+    text = workflow.read_text(encoding="utf-8")
+    aufrufe = re.findall(r"astral-sh/setup-uv@(\S+)", text)
+    assert aufrufe
+    for ref in aufrufe:
+        assert re.fullmatch(r"v\d+\.\d+\.\d+", ref), ref
 
 
 # ==========================================================================

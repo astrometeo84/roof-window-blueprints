@@ -165,9 +165,11 @@ Zusage für ältere Versionen.
      endet mit `return 1 if res["except"] or (args.fail_on_warnings and res["warn"]) else 0`
      (`scripts/check_config.py`), also mit 0.
   Folge: Aufbau, Eingaben und Optionen der Template-Blueprints sichern die Tests
-  (`tests/test_struktur.py`), nicht die CI. Mit `--fail-on-warnings` (im Quelltext vorhanden:
-  „Exit non-zero if warnings are present“) würde Fall 2 rot, Fall 1 nicht. Gegenprobe beider
-  Fälle mit dem ersten Template-Blueprint (Etappe 3), Ergebnis hier nachtragen.
+  (`tests/test_struktur.py`), nicht die CI. Deshalb ruft unser HA-Job `check_config` selbst per
+  `docker run` **mit** `--fail-on-warnings` auf (entschieden 23.11.2026, `docs/ENTWURF.md` 6.1;
+  im Quelltext: „Exit non-zero if warnings are present“): Fall 2 wird damit rot, Fall 1 bleibt
+  unsichtbar. Gegenprobe beider Fälle mit dem ersten Template-Blueprint (Etappe 3), Ergebnis hier
+  nachtragen.
 - **Automations-Blueprints – Annahme, noch nicht gegengeprüft.** Laut Quelltext-Auszug
   validiert `components/automation/config.py` mit `raise_on_errors=False`: Blueprint- und
   Schemafehler werden nur protokolliert, die Automation bleibt mit Status `FAILED_BLUEPRINT`

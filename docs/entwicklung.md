@@ -21,10 +21,11 @@ _Folgt mit den Template-Blueprints (Etappen 3 und 4)._
   Eingaben, vollständige und minimale Instanz, `use_blueprint`-Pfad – kommt mit dem ersten
   Blueprint in Etappe 3), Zugangsdaten.
 - `tests/test_deploy.py`: `scripts/ha_deploy.py` ohne Netz.
-- Die CI lässt zusätzlich echtes Home Assistant die Konfiguration prüfen. Grenze: Bei
-  Template-Blueprints wird dieser Job nie rot – Schemafehler verwirft HA still, Ladefehler sind
-  nur Warnungen (Skill `sonnengeometrie`, Abschnitt 5); bei Automations-Blueprints vermutlich
-  ähnlich (Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus; ob der Nachbau
+- Die CI lässt zusätzlich echtes Home Assistant die Konfiguration prüfen, mit
+  `--fail-on-warnings`. Grenze: Schemafehler einer Template-Instanz verwirft HA still, die CI
+  bleibt grün; Ladefehler (falscher `path`, fehlende Pflichteingabe) werden erst durch
+  `--fail-on-warnings` rot (Skill `sonnengeometrie`, Abschnitt 5); bei Automations-Blueprints
+  vermutlich ähnlich (Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus; ob der Nachbau
   in `conftest.py` zu HA passt, zeigt nur das echte HA. Die Tests sind die eigentliche Sicherung.
 
 ## Taugen die Tests etwas?
@@ -51,6 +52,9 @@ Gegenproben: Code absichtlich kaputt gemacht (per `git stash` bzw. `git worktree
 | 2 | `ha_deploy.py`: 401 ohne Hinweis auf Adminrechte | `test_401_nennt_token_und_adminrechte` |
 | 2 | Blueprint mit Endung `.yml` | `test_unter_blueprints_nur_yaml_dateien` |
 | 2 | Netzfehler-Text mit Hostnamen ausgegeben – **erst nicht erkannt** (Test nutzte Fehler ohne Host), Test nachgeschärft | `test_gibt_weder_token_noch_adresse_aus` |
+| 2 | HA-Job ohne `--fail-on-warnings` / ohne Kopie der `secrets.yaml` / wieder mit `frenck/action-home-assistant` (Probe mit dem Workflow-Entwurf) | `test_ha_job_prueft_mit_fail_on_warnings` |
+| 2 | `--entrypoint ""` entfernt – **erst nicht erkannt** (Test fand den Begriff im Kommentar, dann nur in einem der zwei `docker run`), Test nachgeschärft: nur Befehlszeilen, jeder Aufruf einzeln | `test_ha_job_prueft_mit_fail_on_warnings` |
+| 2 | `setup-uv@v10` bzw. `@v7` statt vollständiger Version | `test_setup_uv_mit_vollstaendiger_version` |
 
 ## Workflows
 

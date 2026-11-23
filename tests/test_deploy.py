@@ -170,7 +170,8 @@ def test_gibt_weder_token_noch_adresse_aus(capsys):
     url, token = "http://192.0.2.7:8123", "SEHR-GEHEIMER-TOKEN"
     ha_deploy.pruefen_und_neu_laden(url, token, False, aufruf=_Ha())
     ha_deploy.pruefen_und_neu_laden(url, token, False, aufruf=_Ha(pruefung="invalid"))
-    fehler = urllib.error.URLError("keine Route")
+    # Echte Fehlertexte (etwa bei SSL) nennen oft den Host – genau das darf nicht durch.
+    fehler = urllib.error.URLError("hostname '192.0.2.7' doesn't match certificate")
     ha_deploy.pruefen_und_neu_laden(url, token, False, aufruf=_Ha(fehler=fehler))
     ausgabe = capsys.readouterr()
     for geheim in (token, "192.0.2.7"):

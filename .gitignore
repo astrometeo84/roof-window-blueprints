@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+# uv.lock gehört bewusst ins Repo – nicht ignorieren
+# In der CI erzeugte Home-Assistant-Testkonfiguration
+ha/
+.DS_Store
+# Zugangsdaten für scripts/ha_deploy.py – enthält den HA-Token
+.ha.env

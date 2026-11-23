@@ -1,0 +1,16 @@
+# Test-Konfiguration für die Prüfung in GitHub Actions (Job "Home Assistant
+# lädt die Blueprints"). Home Assistant lädt damit die Blueprints und meldet
+# Fehler im Aufbau.
+#
+# Template-Blueprints werden unten unter "template:" mit "use_blueprint:"
+# eingebunden, je eine minimale und eine vollständig belegte Instanz (Skill
+# neuer-blueprint). Achtung: Passen die Eingaben einer Template-Instanz nicht
+# zum Schema, verwirft HA den Abschnitt still – check_config meldet dann
+# keinen Fehler (Skill sonnengeometrie, Abschnitt 5).
+default_config:
+
+automation: !include automations.yaml
+
+# Noch keine Blueprints (Etappe 2). Mit dem ersten Template-Blueprint kommt
+# hier "template:" dazu, samt Template-Sensoren für die Entitäten, die die
+# Instanzen referenzieren.

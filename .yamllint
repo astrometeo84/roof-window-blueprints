@@ -1,0 +1,29 @@
+extends: default
+
+rules:
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: disable
+  truthy:
+    # GitHub Actions nutzt "on:" als Schlüssel
+    check-keys: false
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+  document-start:
+    present: false
+  braces:
+    max-spaces-inside: 1
+  brackets:
+    max-spaces-inside: 1
+
+# Nicht prüfen: fremde YAML-Dateien aus virtuellen Umgebungen,
+# die Workflow-Dateien und die in der CI erzeugte Testkonfiguration.
+ignore: |
+  .github/
+  .venv/
+  venv/
+  ha/

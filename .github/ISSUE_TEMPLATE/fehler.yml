@@ -1,0 +1,50 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie beschrieben
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Bitte keine Adressen, Koordinaten, Zugangsdaten oder Tokens einfügen –
+        auch nicht im Trace. Entitäts-IDs gern durch Beispielnamen ersetzen.
+  - type: textarea
+    id: was
+    attributes:
+      label: Was passiert?
+      description: Und was hattest du stattdessen erwartet?
+    validations:
+      required: true
+  - type: dropdown
+    id: welcher
+    attributes:
+      label: Welcher Blueprint?
+      options:
+        - Fläche – Sonneneinfall
+        - Fläche – Helligkeit aus PV
+        - Beschattung
+        - Dachfenster offen – Warnung
+    validations:
+      required: true
+  - type: input
+    id: ha
+    attributes:
+      label: Home-Assistant-Version
+      placeholder: "2026.11.1"
+    validations:
+      required: true
+  - type: input
+    id: blueprint
+    attributes:
+      label: Blueprint-Version
+      description: Steht im Kopf der Blueprint-Datei als "# Version:"
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: trace
+    attributes:
+      label: Trace oder Zustand
+      description: >
+        Automation: drei Punkte → Traces → Download.
+        Template-Sensor: Entwicklerwerkzeuge → Zustände, Zustand und Attribute.
+      render: text

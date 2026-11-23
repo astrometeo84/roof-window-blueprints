@@ -11,13 +11,31 @@
 # Skill sonnengeometrie, Abschnitt 5). Die Tests in tests/test_struktur.py
 # sind die Sicherung.
 #
-# Wegen --fail-on-warnings macht jede Warnung die CI rot. Bringt default_config
-# in der CI eigene Warnungen mit, hier auf die nötigen Integrationen
-# verkleinern – Warnungen nicht unterdrücken (docs/ENTWURF.md 6.1).
+# Wegen --fail-on-warnings macht jede Warnung die CI rot. default_config bringt
+# in der CI keine eigenen Warnungen mit (belegt: erster Lauf grün, PR #2).
+# Ändert sich das mit einer neuen HA-Version, hier auf die nötigen
+# Integrationen verkleinern – Warnungen nicht unterdrücken
+# (docs/ENTWURF.md 6.1). default_config bringt auch die Sun-Integration
+# (sun.sun) für "Fläche – Sonneneinfall" mit.
 default_config:
 
 automation: !include automations.yaml
 
-# Noch keine Blueprints (Etappe 2). Mit dem ersten Template-Blueprint kommt
-# hier "template:" dazu, samt Template-Sensoren für die Entitäten, die die
-# Instanzen referenzieren.
+# path ist relativ zu blueprints/template/. Die minimale Instanz hat nur die
+# Pflichteingaben, die vollständige jede Eingabe plus name und unique_id
+# (tests/test_struktur.py prüft beides).
+template:
+  # Fläche – Sonneneinfall, minimal
+  - use_blueprint:
+      path: dachfenster/flaeche_sonneneinfall.yaml
+      input:
+        azimut: 180
+        neigung: 40
+  # Fläche – Sonneneinfall, vollständig
+  - use_blueprint:
+      path: dachfenster/flaeche_sonneneinfall.yaml
+      input:
+        azimut: 135.5
+        neigung: 22.5
+    name: Sonneneinfall Beispielfläche
+    unique_id: sonneneinfall_beispielflaeche

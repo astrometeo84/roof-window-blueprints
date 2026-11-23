@@ -93,6 +93,26 @@ def input_default(blueprint: dict, name: str) -> Any:
     return find_input(blueprint, name)["default"]
 
 
+def blueprint_variablen(blueprint: dict, eingaben: dict[str, Any]) -> dict[str, Any]:
+    """Den Abschnitt ``variables:`` eines Blueprints auflösen wie HA.
+
+    ``!input x`` wird durch den Wert der Eingabe ersetzt; fehlt er, gilt der
+    Standardwert aus dem Blueprint, fehlt auch der, ist das ein Fehler (in HA:
+    ``MissingInput``). Template-Variablen gibt es in unseren Blueprints nicht;
+    taucht eine auf, schlägt der Test laut fehl statt still falsch zu rechnen.
+    """
+    werte: dict[str, Any] = {}
+    for name, wert in (blueprint.get("variables") or {}).items():
+        if not (isinstance(wert, tuple) and wert[0] == "INPUT"):
+            raise NotImplementedError(f"Variable {name}: nur !input wird nachgebaut")
+        eingabe = wert[1]
+        if eingabe in eingaben:
+            werte[name] = eingaben[eingabe]
+        else:
+            werte[name] = input_default(blueprint, eingabe)
+    return werte
+
+
 # --------------------------------------------------------------------------
 # Zustandstabelle (das "Home Assistant" der Tests)
 # --------------------------------------------------------------------------

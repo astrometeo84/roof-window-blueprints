@@ -19,7 +19,7 @@ from collections import Counter
 import pytest
 import yaml
 
-from conftest import REPO, BLUEPRINT_ORDNER, blueprint_dateien
+from conftest import REPO, BLUEPRINT_ORDNER, all_inputs, blueprint_dateien, input_names, load_blueprint
 
 CONFIG = json.loads((REPO / ".release-please-config.json").read_text(encoding="utf-8"))
 PAKET = CONFIG["packages"]["."]
@@ -88,6 +88,84 @@ def test_blueprint_dateinamen_sind_eindeutig():
     """
     doppelt = [n for n, k in Counter(p.name for p in blueprint_dateien()).items() if k > 1]
     assert not doppelt, f"Dateiname mehrfach unter blueprints/: {doppelt}"
+
+
+TEMPLATE_BLUEPRINTS = [p for p in blueprint_dateien() if p.parent.parent.name == "template"]
+# Plattformen, die ein Template-Blueprint beschreiben kann (eine je Blueprint).
+TEMPLATE_PLATTFORMEN = {"sensor", "binary_sensor", "number", "select", "button", "image",
+                        "weather", "switch", "light", "cover", "fan", "lock", "vacuum",
+                        "alarm_control_panel", "event", "update"}
+SONNENEINFALL = BLUEPRINT_ORDNER / "template" / "dachfenster" / "flaeche_sonneneinfall.yaml"
+
+
+def _version(text: str) -> tuple[int, ...]:
+    return tuple(int(t) for t in text.split("."))
+
+
+@pytest.mark.parametrize("datei", blueprint_dateien(), ids=_relativ)
+def test_eingaben_deklariert_und_benutzt(datei):
+    """Jedes ``!input x`` braucht eine Eingabe x – und jede Eingabe wird benutzt.
+
+    Ein Tippfehler im Namen fiele sonst erst in HA auf, bei Template-Blueprints
+    nur als Warnung beim Laden.
+    """
+    deklariert = set(all_inputs(load_blueprint(datei)))
+    assert input_names(datei) == deklariert
+
+
+@pytest.mark.parametrize("datei", blueprint_dateien(), ids=_relativ)
+def test_kopfdaten(datei):
+    bp = load_blueprint(datei)["blueprint"]
+    assert bp["name"] and bp["description"] and bp["author"]
+    assert bp["domain"] == datei.parent.parent.name
+    assert bp["source_url"] == (
+        "https://github.com/astrometeo84/roof-window-blueprints/blob/main/" + _relativ(datei))
+    # Format laut HA: major.minor.patch, alle drei Teile Pflicht.
+    assert re.fullmatch(r"\d{4}\.\d{1,2}\.\d+", bp["homeassistant"]["min_version"])
+
+
+@pytest.mark.parametrize("datei", blueprint_dateien(), ids=_relativ)
+def test_min_version_reicht_fuer_clamp(datei):
+    """``clamp`` gibt es erst seit HA 2025.4 (Skill sonnengeometrie, 2)."""
+    if "clamp(" not in datei.read_text(encoding="utf-8"):
+        pytest.skip("nutzt clamp nicht")
+    min_version = load_blueprint(datei)["blueprint"]["homeassistant"]["min_version"]
+    assert _version(min_version) >= (2025, 4, 0)
+
+
+@pytest.mark.parametrize("datei", TEMPLATE_BLUEPRINTS, ids=_relativ)
+def test_template_blueprint_beschreibt_genau_eine_entitaet(datei):
+    """HA lehnt mehr als eine Entität je Template-Blueprint ab (template/config.py)."""
+    bp = load_blueprint(datei)
+    plattformen = set(bp) - {"blueprint", "variables"}
+    assert len(plattformen) == 1 and plattformen <= TEMPLATE_PLATTFORMEN, plattformen
+    # Eingaben kommen über variables in die Vorlagen, nicht direkt als !input
+    # in einer Vorlage (dort wäre es ein Text, keine Variable).
+    for name in all_inputs(bp):
+        assert bp["variables"][name] == ("INPUT", name)
+
+
+def test_sonneneinfall_eingaben():
+    """Azimut als Kompass 0–360, Neigung 0–90, beide in Grad (docs/ENTWURF.md 4.1)."""
+    bp = load_blueprint(SONNENEINFALL)
+    eingaben = all_inputs(bp)
+    for name, (lo, hi) in {"azimut": (0, 360), "neigung": (0, 90)}.items():
+        zahl = eingaben[name]["selector"]["number"]
+        assert (zahl["min"], zahl["max"]) == (lo, hi), name
+        assert zahl["unit_of_measurement"] == "°", name
+        assert "default" not in eingaben[name], f"{name}: Pflicht, ohne Standardwert"
+
+
+def test_sonneneinfall_sensor():
+    sensor = load_blueprint(SONNENEINFALL)["sensor"]
+    assert sensor["unit_of_measurement"] == "°"
+    assert sensor["state_class"] == "measurement"
+    assert "device_class" not in sensor, "für Winkel gibt es keine device_class"
+    assert set(sensor["attributes"]) == {"cos_einfall", "sonne_trifft_flaeche", "azimut", "neigung"}
+    assert "availability" in sensor
+    # Zulässige Schlüssel des Sensor-Schemas (template/sensor.py, schemas.py).
+    assert set(sensor) <= {"state", "availability", "attributes", "unit_of_measurement",
+                           "state_class", "device_class", "icon", "picture", "name"}
 
 
 def test_unter_blueprints_nur_yaml_dateien():
@@ -310,6 +388,48 @@ def test_fixture_configuration_bindet_automationen_ein():
 
 def test_fixture_automations_ist_eine_liste():
     assert isinstance(_fixture("automations.yaml"), list)
+
+
+INSTANZ_SCHLUESSEL = {"use_blueprint", "name", "unique_id"}
+
+
+def _template_instanzen():
+    return [e for e in _fixture("configuration.yaml").get("template", []) if "use_blueprint" in e]
+
+
+def test_fixture_template_instanzen_passen_zum_blueprint():
+    """Ladefehler wie ein falscher path kommen in HA nur als Warnung, Schemafehler
+    gar nicht (Skill sonnengeometrie, 5). Deshalb prüfen wir die Instanzen hier."""
+    for instanz in _template_instanzen():
+        assert set(instanz) <= INSTANZ_SCHLUESSEL, f"unbekannte Schlüssel: {set(instanz) - INSTANZ_SCHLUESSEL}"
+        ub = instanz["use_blueprint"]
+        assert set(ub) == {"path", "input"}
+        datei = BLUEPRINT_ORDNER / "template" / ub["path"]
+        assert datei.is_file(), f"path zeigt ins Leere: {ub['path']}"
+        eingaben = all_inputs(load_blueprint(datei))
+        assert set(ub["input"]) <= set(eingaben), f"keine echte Eingabe: {set(ub['input']) - set(eingaben)}"
+        pflicht = {n for n, e in eingaben.items() if "default" not in e}
+        assert pflicht <= set(ub["input"]), f"Pflichteingabe fehlt: {pflicht - set(ub['input'])}"
+
+
+@pytest.mark.parametrize("datei", TEMPLATE_BLUEPRINTS, ids=_relativ)
+def test_fixture_je_template_blueprint_minimal_und_vollstaendig(datei):
+    """Skill neuer-blueprint, 5: eine minimale und eine vollständig belegte Instanz."""
+    pfad = datei.relative_to(BLUEPRINT_ORDNER / "template").as_posix()
+    eingaben = all_inputs(load_blueprint(datei))
+    pflicht = {n for n, e in eingaben.items() if "default" not in e}
+    instanzen = [i for i in _template_instanzen() if i["use_blueprint"]["path"] == pfad]
+    minimal = [i for i in instanzen
+               if set(i) == {"use_blueprint"} and set(i["use_blueprint"]["input"]) == pflicht]
+    vollstaendig = [i for i in instanzen
+                    if set(i) == INSTANZ_SCHLUESSEL and set(i["use_blueprint"]["input"]) == set(eingaben)]
+    assert minimal, f"keine minimale Instanz für {pfad}"
+    assert vollstaendig, f"keine vollständige Instanz für {pfad}"
+
+
+def test_fixture_unique_ids_eindeutig():
+    ids = [i["unique_id"] for i in _template_instanzen() if "unique_id" in i]
+    assert len(ids) == len(set(ids))
 
 
 def test_fixture_secrets_ist_nur_platzhalter():

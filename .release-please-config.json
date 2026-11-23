@@ -9,7 +9,9 @@
       "bump-minor-pre-major": true,
       "draft": false,
       "prerelease": false,
-      "extra-files": [],
+      "extra-files": [
+        "blueprints/template/dachfenster/flaeche_sonneneinfall.yaml"
+      ],
       "changelog-sections": [
         {"type": "feat", "section": "Hinzugefügt"},
         {"type": "fix", "section": "Behoben"},

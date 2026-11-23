@@ -283,11 +283,13 @@ Der dritte Job lässt Home Assistant selbst die Konfiguration laden; was er erke
 „Grenze“. Die Fixtures enthalten je Blueprint eine minimale und eine vollständig belegte Instanz,
 die Template-Blueprints über `template:` → `use_blueprint:` in `configuration.yaml`.
 Grenze (geklärt in Etappe 2, Skill `sonnengeometrie` Abschnitt 5): Schemafehler einer
-Template-Blueprint-Instanz verwirft HA **still** – auch dieser Job bleibt dabei grün. Ladefehler
-(falscher `path`, fehlende Pflichteingabe) und unbekannte Integrationen sind in `check_config` nur
-Warnungen; deshalb läuft die Prüfung mit `--fail-on-warnings` (entschieden 23.11.2026). Damit
-werden sie rot – **belegt** durch die Gegenprobe in PR #3 (falscher `path` → rot; unbekannter
-Schlüssel in einer Instanz → grün, nur die Tests rot; Skill `sonnengeometrie` Abschnitt 5).
+Template-Blueprint-Instanz verwirft HA – auch dieser Job bleibt dabei grün, HA schreibt nur
+eine Meldung ins Log. Ladefehler (falscher `path`, fehlende Pflichteingabe) und unbekannte
+Integrationen sind in `check_config` nur Warnungen; deshalb läuft die Prüfung mit
+`--fail-on-warnings` (entschieden 23.11.2026). Gegenprobe in PR #3 (Skill `sonnengeometrie`
+Abschnitt 5): **falscher `path` → rot** und **unbekannter Schlüssel in einer Instanz → grün**
+(nur die Tests rot) sind belegt; dass eine fehlende Pflichteingabe ebenso rot wird, folgt nur
+aus dem Quelltext (nicht gegengeprüft).
 Bei Automations-Blueprints ist es nach dem Quelltext vermutlich ähnlich
 (Annahme, Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus. Die eigentliche
 Sicherung sind deshalb die Tests (`tests/test_struktur.py`, `tests/test_vorlagen.py`).
@@ -595,8 +597,8 @@ Nach dem Muster der Live-Tests von aiocontrome (`docs/LIVE_TESTS.md`, `tests/liv
   macht aber nie rot – Schemafehler werden still verworfen, Ladefehler sind nur Warnungen (6.1,
   Skill `sonnengeometrie` Abschnitt 5).
 - ~~HA-Job mit `--fail-on-warnings`?~~ entschieden: ja, per `docker run` statt der Action (6.1).
-  Ladefehler werden rot, Schemafehler weiterhin nicht – beides belegt durch die Gegenprobe in
-  PR #3.
+  Gegenprobe in PR #3: falscher `path` → rot, unbekannter Schlüssel (Schemafehler) → grün;
+  fehlende Pflichteingabe → rot nur laut Quelltext.
 - ~~`setup-uv` v7 oder neuer?~~ entschieden: `@v10.4.0`, Änderungen geprüft (6.5).
 - ~~Lädt `template.reload` geänderte Template-Blueprints neu?~~ geklärt: ja, der Dienst leert
   vorher den Blueprint-Zwischenspeicher (Quelltext); Live-Bestätigung beim ersten Deploy.

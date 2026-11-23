@@ -72,9 +72,11 @@ ebenfalls.
 - Template-Blueprint: `tests/fixtures/configuration.yaml` → `template:` → `use_blueprint:`,
   eine minimale und eine vollständig belegte Instanz. `path:` relativ zu
   `blueprints/template/`, also `dachfenster/<name>.yaml`. Achtung: Passt eine Instanz nicht zum
-  Schema, bleibt die CI grün; ein falscher `path` wird nur dank `--fail-on-warnings` rot (belegt
-  durch die Gegenprobe in PR #3; Skill `sonnengeometrie` Abschnitt 5) – Aufbau und Optionen deshalb in `tests/test_struktur.py`
-  selbst prüfen.
+  Schema, bleibt die CI grün; ein falscher `path` wird nur dank
+  `--fail-on-warnings` rot (rot: Gegenprobe PR #3; Warnung statt Fehler:
+  `helpers/check_config.py` `_comp_error`; Skill `sonnengeometrie` Abschnitt 5). Ein solcher
+  Ladefehler legt im echten HA alle Template-Entitäten aus YAML lahm. Aufbau, Eingaben und
+  Optionen deshalb in `tests/test_struktur.py` selbst prüfen.
 - Automations-Blueprint: `tests/fixtures/automations.yaml`, eine Instanz minimal, eine
   vollständig (jede Eingabe belegt).
 - Referenzierte Entitäten als Template-Sensoren in `configuration.yaml` anlegen.

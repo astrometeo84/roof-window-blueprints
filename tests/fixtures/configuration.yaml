@@ -4,10 +4,11 @@
 #
 # Template-Blueprints werden unten unter "template:" mit "use_blueprint:"
 # eingebunden, je eine minimale und eine vollständig belegte Instanz (Skill
-# neuer-blueprint). Achtung: Schemafehler einer Template-Instanz verwirft HA
-# still, die CI bleibt grün. Ladefehler (falscher path, fehlende
-# Pflichteingabe) sind nur Warnungen; weil die CI mit --fail-on-warnings
-# prüft, werden sie rot (belegt durch die Gegenprobe in PR #3; Skill
+# neuer-blueprint). Achtung: Schemafehler einer Template-Instanz (z. B.
+# unbekannter Schlüssel) verwirft HA, die CI bleibt grün – nur eine Meldung im
+# Log. Ladefehler sind nur Warnungen; weil die CI mit --fail-on-warnings
+# prüft, werden sie rot. Beides belegt durch die Gegenprobe in PR #3 (für den
+# falschen path; fehlende Pflichteingabe nur laut Quelltext; Skill
 # sonnengeometrie, Abschnitt 5). Die Tests in tests/test_struktur.py sind die
 # Sicherung.
 #

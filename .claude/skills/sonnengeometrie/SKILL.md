@@ -234,8 +234,16 @@ Zusage für ältere Versionen.
      Failed to load blueprint: Unable to find dachfenster/gibt_es_nicht.yaml“. Unter
      „Successful config (partial)“ blieb `template:` **leer**: Ein Ladefehler einer einzigen
      Instanz kostet in der Prüfung den ganzen `template:`-Abschnitt, auch die intakte zweite
-     Instanz. Ob das im laufenden HA genauso ist (alle Template-Entitäten weg), ist nicht geprüft
-     – Annahme, in `docs/anleitung.md` als Warnung vermerkt.
+     Instanz. **Im laufenden HA ebenso – belegt im Quelltext** (2026.11.2, Befund
+     `ha-experte`): `BlueprintException` erbt von `HomeAssistantError`
+     (`blueprint/errors.py`); `template/config.py` fängt je Abschnitt nur `probatio.Invalid`;
+     `config.py` (`async_process_component_config`) gibt bei `HomeAssistantError` keine
+     Konfiguration zurück; `setup.py`: „Invalid config.“ → `return False`, die Integration
+     `template` startet nicht. Beim Neuladen bleibt der alte Stand (`template/services.py`:
+     „if conf is None: return“). Gilt laut Quelltext ebenso für eine fehlende Pflichteingabe
+     (`MissingInput`) und einen unbekannten Schlüssel unter `use_blueprint:`
+     (`InvalidBlueprintInputs`). Ob dann auch über die Oberfläche angelegte Template-Helfer
+     fehlen, ist nicht nachgelesen. Warnung in `docs/anleitung.md`.
   2. **Unbekannter Schlüssel** auf Ebene der Instanz (`unbekannt: 1`, Fall 1): HA-Job **grün**,
      Exit-Code 0, obwohl HA ins Log schreibt: „ERROR:homeassistant.config:Invalid config for
      'template' at configuration.yaml, line 42: 'unbekannt' is an invalid option for 'template',

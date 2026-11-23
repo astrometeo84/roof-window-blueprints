@@ -270,22 +270,44 @@ den Inhalt als Text (die GitHub App darf `.github/workflows/` nicht ändern).
 | Job-Name | Inhalt |
 |---|---|
 | `YAML-Stil` | `uv run --locked yamllint --strict .` |
-| `Tests (Python …)` | Matrix (wled: 3.11–3.13, aiocontrome: 3.13–3.14), `uv sync --locked`, `uv run pytest -v` |
-| `Home Assistant lädt die Blueprints` | HA-Konfiguration aus `tests/fixtures/` bauen, Automations-Blueprints nach `ha/blueprints/automation/dachfenster/`, Template-Blueprints nach `ha/blueprints/template/dachfenster/` kopieren, dann `frenck/action-home-assistant@v1` mit `version: stable` |
+| `Tests (Python …)` | Matrix 3.13 und 3.14 (entschieden 23.11.2026), `uv sync --locked`, `uv run pytest -v` |
+| `Home Assistant lädt die Blueprints` | HA-Konfiguration aus `tests/fixtures/` bauen, Automations-Blueprints nach `ha/blueprints/automation/dachfenster/`, Template-Blueprints nach `ha/blueprints/template/dachfenster/` kopieren, `secrets.yaml` nach `ha/`, dann `check_config --fail-on-warnings` per `docker run` im Image `ghcr.io/home-assistant/home-assistant:stable` (vorher `--version` fürs Log) |
 
-Der dritte Job ist der aussagekräftigste: Home Assistant selbst prüft Aufbau, Selektoren und
-Vorlagen. Die Fixtures enthalten je Blueprint eine minimale und eine vollständig belegte Instanz,
+Der dritte Job lässt Home Assistant selbst die Konfiguration laden; was er erkennt, steht unter
+„Grenze“. Die Fixtures enthalten je Blueprint eine minimale und eine vollständig belegte Instanz,
 die Template-Blueprints über `template:` → `use_blueprint:` in `configuration.yaml`.
+Grenze (geklärt in Etappe 2, Skill `sonnengeometrie` Abschnitt 5): Schemafehler einer
+Template-Blueprint-Instanz verwirft HA **still** – auch dieser Job bleibt dabei grün. Ladefehler
+(falscher `path`, fehlende Pflichteingabe) und unbekannte Integrationen sind in `check_config` nur
+Warnungen; deshalb läuft die Prüfung mit `--fail-on-warnings` (entschieden 23.11.2026). Laut
+Quelltext werden sie dann rot – Annahme, Gegenprobe mit falschem `path` in Etappe 3. Bei Automations-Blueprints ist es nach dem Quelltext vermutlich ähnlich
+(Annahme, Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus. Die eigentliche
+Sicherung sind deshalb die Tests (`tests/test_struktur.py`, `tests/test_vorlagen.py`).
+
+`frenck/action-home-assistant@v1` reicht `--fail-on-warnings` nicht durch. Der Job macht deshalb
+selbst, was die Action macht: `secrets.yaml` nach `ha/` kopieren, Image ziehen, mit
+`--entrypoint ""` (sonst startet das Image HA selbst) erst `python -m homeassistant --version` fürs
+Log, dann `python -m homeassistant --config … --script check_config --fail-on-warnings`. Was dabei
+wegfällt: die Fehler-Annotationen der Action (Problem-Matcher); die Meldungen stehen im Log.
+Bringt `default_config` in der CI eigene Warnungen mit, wird die Fixture-Konfiguration auf die
+nötigen Integrationen verkleinert – Warnungen werden **nicht** unterdrückt. Dass sie keine
+bringt, ist eine Annahme: Nach dem ersten CI-Lauf im Log prüfen, dass unter „General Warnings“
+und unter den einzelnen Domains nichts steht.
 
 ### 6.2 `release-please.yml` – bei Push auf `main` und von Hand
 
-`permissions: contents: write, pull-requests: write`. Zwei Jobs:
+`permissions: contents: write, issues: write, pull-requests: write` (`issues` verlangt die README
+der Action; vermutlich für die Labels am Release-PR – Annahme). Zwei Jobs:
 
 1. `googleapis/release-please-action@v5` mit `config-file` und `manifest-file`. Pflegt den
    Release-PR; wird er gemergt, entstehen Tag und GitHub-Release.
 2. Nur wenn ein Release entstanden ist (`needs` + `if: release_created == 'true'`): auschecken,
-   `scripts/check_version.py` gegen den Tag laufen lassen (Sicherheitsnetz), dann **alle vier
-   Blueprint-Dateien** mit `gh release upload "$TAG" … --clobber` ans Release hängen.
+   `scripts/check_version.py` gegen den Tag laufen lassen (Sicherheitsnetz), dann **alle
+   Blueprint-Dateien unter `blueprints/`** per Muster (`shopt -s globstar nullglob`,
+   `blueprints/**/*.yaml`) mit `gh release upload "$TAG" … --clobber` ans Release hängen. Keine
+   feste Liste: Ein neuer Blueprint braucht keine Workflow-Änderung. Voraussetzung: Die
+   Dateinamen sind eindeutig, weil Release-Anhänge keine Ordner haben (Test in 6.4). Findet das
+   Muster nichts, bricht der Schritt ab.
 
 Der zweite Job steht bewusst im selben Workflow: Was der Bot mit dem Standard-Token anlegt (Tag,
 Release, PR), startet keine anderen Workflows. Ein eigener Workflow auf `release: published` liefe nie.
@@ -294,15 +316,17 @@ Release, PR), startet keine anderen Workflows. Ein eigener Workflow auf `release
 
 - `.release-please-config.json`: `release-type: simple`, `package-name: roof-window-blueprints`,
   `changelog-path: CHANGELOG.md`, `include-component-in-tag: false`, `draft: false`,
-  `prerelease: false`, `extra-files`: die vier Blueprint-Dateien.
+  `prerelease: false`, `extra-files`: die Blueprint-Dateien. Startet leer (Etappe 2, noch keine
+  Blueprints) und wächst mit jedem Blueprint; das ist die einzige Stelle der Release-Kette, die
+  ein neuer Blueprint berührt (Skill `neuer-blueprint`).
 - `changelog-sections` deutsch wie bei wled: `feat` → Hinzugefügt, `fix` → Behoben,
   `perf` → Geändert; `docs`, `test`, `ci`, `chore` versteckt (`hidden: true`).
 - Jeder **sichtbare** Abschnitt löst einen Release-PR aus. Bei wled ist `refactor` sichtbar,
   CONTRIBUTING.md sagt aber „keine Version“. Hier einheitlich: `refactor` ebenfalls verstecken,
   und die Tabelle in CONTRIBUTING.md muss zur Konfiguration passen.
 - `.release-please-manifest.json` startet mit `{".": "0.0.0"}`; das erste `feat:` ergibt 0.1.0.
-- Für die 0.x-Phase `bump-minor-pre-major: true` erwägen, sonst macht ein `feat!:` sofort 1.0.0
-  (wled nutzt `false`, startete aber bei 1.0.0).
+- `bump-minor-pre-major: true` (entschieden 23.11.2026): In der 0.x-Phase hebt ein `feat!:` die
+  zweite Stelle an statt sofort 1.0.0 (wled nutzt `false`, startete aber bei 1.0.0).
 
 ### 6.4 Versionsnummer
 
@@ -316,20 +340,43 @@ Steht nur im Kopf jeder Blueprint-Datei, weil das Blueprint-Schema kein Versions
 # prüft beim Release, dass sie zum Tag passt.
 ```
 
-Tests halten fest: Markierung in jedem Blueprint vorhanden; Version nur in den Blueprints;
-`pyproject.toml` bleibt bei `"0"` und steht nicht in `extra-files`; `uv.lock` passt zur
-`pyproject.toml`; `extra-files` und die Upload-Liste im Release-Workflow nennen genau die
-Blueprint-Dateien.
+Tests halten fest: Markierung in jedem Blueprint vorhanden und gleich der Version im Manifest;
+`pyproject.toml` bleibt bei `"0"` und steht nicht in `extra-files`; `uv.lock` führt die
+Projektversion `"0"` (Datei lesen wie bei wled; ob sie sonst aktuell ist, prüft die CI mit
+`--locked`); `extra-files` nennt genau die Dateien unter `blueprints/`; die Dateinamen unter
+`blueprints/` sind eindeutig; der Release-Workflow hängt per Muster an statt per Liste (Test
+läuft, sobald die Datei im Repo liegt).
 
 ### 6.5 Festgenagelte Versionen (jeweils mit Begründung als Kommentar)
 
 - Runner `ubuntu-26.04` statt `ubuntu-latest`: ein Wechsel der Ubuntu-Version kommt als eigener
   Commit mit eigener CI, nicht unbemerkt zwischen zwei Läufen.
-- `actions/checkout@v7`, `astral-sh/setup-uv@v7`, `googleapis/release-please-action@v5`,
-  `frenck/action-home-assistant@v1`.
-- `setup-uv` mit fester `version:` gleich der lokalen uv (wled: 0.12.18, aiocontrome: 0.13.8 – die
-  im Container nehmen). Ohne Angabe installiert die Action eine ältere uv, die das Format der
-  `uv.lock` nicht kennt, und `--locked` scheitert, obwohl lokal alles stimmt.
+- `actions/checkout@v7`, `astral-sh/setup-uv@v10.4.0`, `googleapis/release-please-action@v5`,
+  Image `ghcr.io/home-assistant/home-assistant:stable` (6.1).
+- `setup-uv` mit vollständiger Versionsnummer (entschieden 23.11.2026): Seit v8.0.0 veröffentlicht
+  setup-uv nur noch unveränderliche Releases und keine Major-/Minor-Tags mehr – `@v10` gibt es
+  nicht. Ein Wechsel ist deshalb immer ein eigener Commit.
+- `setup-uv` mit fester `version:` gleich der lokalen uv (`uv --version` im Container: 0.13.8).
+  Ohne Angabe nimmt die Action eine uv, die das Format der `uv.lock` womöglich nicht kennt, und
+  `--locked` scheitert, obwohl lokal alles stimmt.
+- Geprüft beim Wechsel v7 → v10.4.0 (Release-Hinweise v8.0.0–v10.4.0, `action.yml` v7.6.0 gegen
+  v10.4.0), nur für die Eingaben, die wir nutzen (`version`, `python-version`, `enable-cache`):
+  - `version` und `python-version`: unverändert. Neu ist nur der Wert `latest-known` (v10.0.0),
+    den wir nicht nutzen.
+  - `enable-cache`: Standard `auto` schaltet den Cache seit v10.0.0 bei `release`, Tag-Push,
+    `pull_request_target` und `workflow_run` ab (Schutz vor Cache-Vergiftung; Release-Hinweise
+    v10.0.0 nennen drei Ereignisse, den Tag-Push nennt die Beschreibung von `enable-cache` in
+    `action.yml` v10.4.0). Wir setzen ihn
+    ausdrücklich: `true` in `validate.yml`; im Release-Job `false`, weil er veröffentlicht und
+    selten läuft – dort zählt Sauberkeit mehr als die paar Sekunden.
+  - `prune-cache` (nicht gesetzt): Standard seit **v9.0.0** `false` statt `true`. Der Cache
+    enthält damit auch die heruntergeladenen Pakete; bei unseren vier Werkzeugen unerheblich,
+    deshalb Standard belassen.
+  - `save-cache`: Standard `auto` statt `true` (v10.2.0), speichert nur in Merge-Queues nicht –
+    nutzen wir nicht.
+  - Unverändert ohne Wirkung für uns: entfernter alter `manifest-file`-Aufbau (v8.0.0), neue
+    Eingaben `python-arch`, `no-project`, `require-checksums`, `download-from-astral-mirror`
+    (Standard `true`, seit v8.2.0 ohne GitHub-Token an den Spiegel), `quiet`.
 - Überall `--locked`: fällt auf, wenn `uv.lock` und `pyproject.toml` auseinanderlaufen.
 
 ### 6.6 Wie ein Release entsteht (gehört in CONTRIBUTING.md)
@@ -359,11 +406,11 @@ zurücksetzen.
 - Das Ruleset `release-tags` der Controme-Repos **nicht unverändert** übernehmen: Dort setzt der
   Nutzer Tags selbst, hier legt release-please den Tag an. Verbietet das Ruleset das Anlegen von
   `v*`-Tags, scheitert das Release.
-- **Offen:** Ein Release-PR, den release-please mit dem Standard-Token öffnet, startet keine
-  Workflows. Sind Prüfungen erforderlich, bleibt er blockiert. Möglichkeiten: Release-PR einmal
-  schließen und wieder öffnen (dann laufen die Prüfungen), release-please ein Token einer eigenen
-  kleinen GitHub App geben (nicht die App von Claude Code), oder die Release-PR-Branches von den
-  Pflichtprüfungen ausnehmen. Wie es bei wled-matrix-display heute läuft, klärt der Nutzer.
+- **Entschieden (23.11.2026):** Ein Release-PR, den release-please mit dem Standard-Token öffnet,
+  startet keine Workflows; mit Pflichtprüfungen bliebe er blockiert. Der Nutzer schließt den
+  Release-PR vor dem Merge einmal und öffnet ihn wieder, dann laufen die Prüfungen (Schritt in
+  CONTRIBUTING.md). Verworfen: eigenes App-Token für release-please, Ausnahme der
+  Release-Branches von den Pflichtprüfungen.
 
 ## 7. Claude Code im Repo
 
@@ -527,13 +574,20 @@ Nach dem Muster der Live-Tests von aiocontrome (`docs/LIVE_TESTS.md`, `tests/liv
 - Sonnenstand: Attribute von `sun.sun` oder Sensoren der Sun-Integration (Sonnenhöhe,
   Sonnenazimut); wie oft aktualisiert wird und ob etwas abgekündigt ist
 - Jinja in HA: `sin`, `cos`, `acos`, `pi`
-- Pfad nach dem Import (`blueprints/<domain>/<autor>/…`) für die `use_blueprint`-Beispiele
+- ~~Pfad nach dem Import~~ geklärt: `use_blueprint: path:` relativ zu `blueprints/template/`
+  (Skill `sonnengeometrie` Abschnitt 5)
 - Benachrichtigungsziel für die Companion-App im Blueprint: gängiges Muster
 - `device_class` und Einheiten: `illuminance` (lx), `irradiance` (W/m²)
-- Prüft `frenck/action-home-assistant` auch Template-Blueprints mit?
-- Lädt `template.reload` geänderte Template-Blueprints neu (für `ha_deploy.py`)?
-- Erforderliche Prüfungen auf dem Release-PR (Abschnitt 6.7, offen)
-- `bump-minor-pre-major` für die 0.x-Phase (Abschnitt 6.3)
+- ~~Prüft `frenck/action-home-assistant` auch Template-Blueprints mit?~~ geklärt: Sie lädt sie,
+  macht aber nie rot – Schemafehler werden still verworfen, Ladefehler sind nur Warnungen (6.1,
+  Skill `sonnengeometrie` Abschnitt 5). Gegenprobe in der CI mit dem ersten Template-Blueprint.
+- ~~HA-Job mit `--fail-on-warnings`?~~ entschieden: ja, per `docker run` statt der Action (6.1).
+  Ladefehler werden laut Quelltext rot (Gegenprobe Etappe 3), Schemafehler weiterhin nicht.
+- ~~`setup-uv` v7 oder neuer?~~ entschieden: `@v10.4.0`, Änderungen geprüft (6.5).
+- ~~Lädt `template.reload` geänderte Template-Blueprints neu?~~ geklärt: ja, der Dienst leert
+  vorher den Blueprint-Zwischenspeicher (Quelltext); Live-Bestätigung beim ersten Deploy.
+- ~~Erforderliche Prüfungen auf dem Release-PR~~ entschieden: schließen und wieder öffnen (6.7)
+- ~~`bump-minor-pre-major`~~ entschieden: `true` (6.3)
 
 ## 9. Etappen
 

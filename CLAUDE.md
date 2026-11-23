@@ -32,6 +32,11 @@ begründet ist, nicht „aufräumen“. Beispiel: `version = "0"` in der `pyproj
 6. **Neue Abhängigkeiten nur nach Rückfrage.**
 7. **Nichts aus dem Code von Solar Forecast ML (SFML) übernehmen** (proprietäre Lizenz). Die
    Physik hier ist Lehrbuchwissen.
+8. **Dieses Repo ist eigenständig.** aiocontrome und ha-controme-insights sind miteinander
+   gekoppelt, dieses Repo aber nicht mit ihnen und auch nicht mit wled-matrix-display. Alle drei
+   dienen nur als Vorlage zum Lesen: dort nichts ändern, keine Branches, Issues oder PRs
+   anlegen. Übernommene Dateien sind eigenständige Kopien ohne Pflicht zum Abgleich;
+   Entscheidungen hier ziehen keine Änderungen dort nach sich.
 
 Die Verbote in `.claude/settings.json` sind nur eine zusätzliche Hürde. Die eigentliche
 Sicherung ist das Ruleset auf GitHub; daran ändert eine Erlaubnis im Container nichts.
@@ -42,8 +47,8 @@ Sicherung ist das Ruleset auf GitHub; daran ändert eine Erlaubnis im Container 
   setzen, `CHANGELOG.md` nicht anfassen. Die Version steht nur im Kopf jeder Blueprint-Datei
   (`# x-release-please-version`).
 - Commits nach Conventional Commits, auf Deutsch, so formuliert, dass sie im CHANGELOG
-  verständlich sind. `feat` und `fix` erscheinen im CHANGELOG; `docs`, `test`, `ci`, `chore`,
-  `refactor` nicht.
+  verständlich sind. `feat`, `fix` und `perf` erscheinen im CHANGELOG und lösen ein Release aus;
+  `docs`, `test`, `ci`, `chore`, `refactor` nicht.
 - Bricht eine Änderung bestehende Einrichtungen (Eingabe umbenannt oder entfernt):
   `feat!:` plus `BREAKING CHANGE:` im Rumpf.
 

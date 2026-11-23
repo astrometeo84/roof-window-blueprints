@@ -1,0 +1,45 @@
+# Dieses Projekt liefert keine Python-Bibliothek aus, sondern Home-Assistant-
+# Blueprints. Die pyproject.toml gibt es nur, damit uv die Werkzeuge für Tests
+# und Linting verwalten kann.
+
+[project]
+name = "roof-window-blueprints"
+# Platzhalter, absichtlich eingefroren. Die echte Version des Projekts steht
+# allein im Kopf jeder Blueprint-Datei; nur dort hebt release-please sie an.
+#
+# uv schreibt die Version des eigenen Projekts in die uv.lock. Hebe
+# release-please sie hier an, ohne dass jemand `uv lock` laufen lässt, passten
+# Sperrdatei und pyproject nicht mehr zusammen – und die CI des Release-PR
+# scheiterte an --locked (Erfahrung aus wled-matrix-display). Ausgerechnet der
+# PR, den man mergen will, wäre dann blockiert.
+#
+# Da hier kein Paket gebaut und nichts veröffentlicht wird (package = false),
+# ist die Nummer ohnehin bedeutungslos. Bitte nicht "aktualisieren".
+version = "0"
+description = "Home-Assistant-Blueprints fürs Dachfenster: Sonneneinfall, Helligkeit aus der PV, Beschattung, Warnung"
+readme = "README.md"
+requires-python = ">=3.13"
+license = "MIT"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "PyYAML>=6.0",
+  "Jinja2>=3.1",
+  "yamllint>=1.35",
+]
+
+[tool.uv]
+# Nichts zu bauen: Es gibt kein Paket, nur Tests und YAML-Dateien.
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+# Live-Tests gegen das echte Home Assistant laufen nur auf ausdrücklichen
+# Wunsch vom PC des Nutzers (docs/ENTWURF.md 7.5), nie in CI oder Container.
+addopts = '-q --strict-markers -m "not live"'
+markers = [
+  "live: liest das echte Home Assistant (nur vom PC des Nutzers, siehe docs/LIVE_TESTS.md)",
+]

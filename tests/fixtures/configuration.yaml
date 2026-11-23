@@ -1,0 +1,23 @@
+# Test-Konfiguration für die Prüfung in GitHub Actions (Job "Home Assistant
+# lädt die Blueprints"). Home Assistant lädt damit die Blueprints und meldet
+# Fehler im Aufbau.
+#
+# Template-Blueprints werden unten unter "template:" mit "use_blueprint:"
+# eingebunden, je eine minimale und eine vollständig belegte Instanz (Skill
+# neuer-blueprint). Achtung: Schemafehler einer Template-Instanz verwirft HA
+# still, die CI bleibt grün. Ladefehler (falscher path, fehlende
+# Pflichteingabe) sind nur Warnungen; weil die CI mit --fail-on-warnings
+# prüft, werden sie laut Quelltext rot (Annahme, Gegenprobe in Etappe 3;
+# Skill sonnengeometrie, Abschnitt 5). Die Tests in tests/test_struktur.py
+# sind die Sicherung.
+#
+# Wegen --fail-on-warnings macht jede Warnung die CI rot. Bringt default_config
+# in der CI eigene Warnungen mit, hier auf die nötigen Integrationen
+# verkleinern – Warnungen nicht unterdrücken (docs/ENTWURF.md 6.1).
+default_config:
+
+automation: !include automations.yaml
+
+# Noch keine Blueprints (Etappe 2). Mit dem ersten Template-Blueprint kommt
+# hier "template:" dazu, samt Template-Sensoren für die Entitäten, die die
+# Instanzen referenzieren.

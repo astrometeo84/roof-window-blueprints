@@ -96,6 +96,10 @@ geprüft, ob die Tests anschlagen.
 | 3 | Attribut `azimut` zeigt die Neigung | `test_attribute_zeigen_die_eingaben` |
 | 3 | Fixture: falscher `path`, unbekannter Schlüssel, unbekannte Eingabe, fehlende Pflichteingabe | `test_fixture_template_instanzen_passen_zum_blueprint`, `test_fixture_je_template_blueprint_minimal_und_vollstaendig` |
 | 3 | `ha_deploy.py` lädt trotz Warnungen der Prüfung neu (alter Stand, per `git stash`) | `test_warnungen_brechen_ab_und_laden_nichts`, `test_trotz_warnungen_laedt_bewusst_neu`, `test_main_reicht_trotz_warnungen_durch` |
+| 3 | `ha_deploy.py`: `main` gibt 0 statt des Ergebnisses zurück – **erst nicht erkannt** (Befund `test-manager`), Test ergänzt | `test_main_endet_bei_warnungen_mit_1` |
+| 3 | `ha_deploy.py`: `--trotz-warnungen` übergeht auch Fehler – **erst nicht erkannt** (Befund `test-manager`), Test ergänzt | `test_trotz_warnungen_uebergeht_keine_fehler` |
+| 3 | `ha_deploy.py`: Adresse in der Ausgabe bei Warnungen – **erst nicht erkannt** (Befund `test-manager`), Test erweitert | `test_gibt_weder_token_noch_adresse_aus` |
+| 3 | `ha_deploy.py`: Abbruch bei Warnungen mit Exit-Code 0 | `test_warnungen_brechen_ab_und_laden_nichts`, `test_main_endet_bei_warnungen_mit_1` |
 | 3 | CI, PR #3: falscher `path` in der Fixture (Commit + Revert) – HA-Job rot (Exit-Code 1) | `test_fixture_template_instanzen_passen_zum_blueprint` und HA-Job |
 | 3 | CI, PR #3: unbekannter Schlüssel in einer Instanz (Commit + Revert) – **vom HA-Job nicht erkannt** (wie erwartet; nur Log-Meldung) | nur `test_fixture_template_instanzen_passen_zum_blueprint` |
 

@@ -8,6 +8,7 @@ Skill ``sonnengeometrie``, Abschnitt 5. Danach je Blueprint eine Klasse.
 from __future__ import annotations
 
 import math
+import re
 
 import pytest
 
@@ -149,16 +150,32 @@ class TestFlaecheSonneneinfall:
         assert werte["state"] == round(erwartet, 1)
         assert werte["state"] != pytest.approx(erwartet, abs=1e-6), "nicht gerundet"
 
+    def _roh_cos(self, bp, hass, azimut, neigung):
+        """Ungerundetes, unbegrenztes cos θ – aus der Vorlage des Zustands selbst.
+
+        Die Ausgabezeile wird durch ``{{ c }}`` ersetzt. So prüfen die Tests
+        unten ihre Voraussetzung (Wert wirklich außerhalb [-1, 1] bzw. 6e-17
+        statt 0) mit der Rechenreihenfolge der Vorlage. Ändert jemand die
+        Vorlage so, dass die Ausreißer verschwinden, schlägt die Voraussetzung
+        an, statt dass die Tests still nichts mehr prüfen.
+        """
+        vorlage, n = re.subn(r"\{\{\s*\(acos\(clamp\(c, -1, 1\)\) / r\) \| round\(1\)\s*\}\}",
+                             "{{ c }}", bp["sensor"]["state"])
+        assert n == 1, "Ausgabezeile der Zustandsvorlage nicht gefunden – _roh_cos anpassen"
+        kontext = blueprint_variablen(bp, {"azimut": azimut, "neigung": neigung})
+        return render(vorlage, hass, **kontext)
+
     # --- Begrenzung vor acos (Skill sonnengeometrie, 2) ------------------
     # Diese Werte ergeben in Gleitkomma-Rechnung cos θ = 1.0000000000000002
-    # bzw. -1.0000000000000002 (gesucht mit derselben Rechenreihenfolge wie die
-    # Vorlage). Ohne Begrenzung wirft acos.
+    # bzw. -1.0000000000000002. Ohne Begrenzung wirft acos.
     def test_cos_knapp_ueber_eins(self, bp):
+        assert self._roh_cos(bp, _sonne(82, 180), 180, 8) > 1, "Voraussetzung"
         werte = self._rechne(bp, _sonne(82, 180), 180, 8)
         assert werte["state"] == 0.0
         assert werte["cos_einfall"] == 1.0
 
     def test_cos_knapp_unter_minus_eins(self, bp):
+        assert self._roh_cos(bp, _sonne(-82, 0), 180, 8) < -1, "Voraussetzung"
         werte = self._rechne(bp, _sonne(-82, 0), 180, 8)
         assert werte["state"] == 180.0
         assert werte["cos_einfall"] == -1.0
@@ -219,9 +236,22 @@ class TestFlaecheSonneneinfall:
         Senkrechte Südfassade, Sonne genau im Osten: streifend, θ = 90°. Ohne
         Rundung von cos θ vor dem Vergleich wäre „trifft“ wahr.
         """
+        assert 0 < self._roh_cos(bp, _sonne(10, 90), 180, 90) < 1e-12, "Voraussetzung"
         werte = self._rechne(bp, _sonne(10, 90), 180, 90)
         assert werte["state"] == 90.0
         assert werte["sonne_trifft_flaeche"] is False
+
+    def test_auf_vier_stellen_gerundet_nicht_weniger(self, bp):
+        """Waagerechte Fläche, Sonne 0,01° hoch (sun.sun hat zwei Nachkommastellen).
+
+        cos θ = sin 0,01° ≈ 1,75e-4 → auf vier Stellen 0.0002 > 0: trifft.
+        Mit drei Stellen wäre es 0.0 und streifendes Licht bis θ ≈ 89,4° fiele
+        weg (Befund test-manager). Der Zustand zeigt trotzdem 90.0.
+        """
+        werte = self._rechne(bp, _sonne(0.01, 180), 180, 0)
+        assert werte["cos_einfall"] == 0.0002
+        assert werte["sonne_trifft_flaeche"] is True
+        assert werte["state"] == 90.0
 
     def test_cos_einfall_auf_vier_stellen(self, bp):
         werte = self._rechne(bp, _sonne(30, 217), 180, 40)

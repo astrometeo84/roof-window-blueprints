@@ -101,6 +101,10 @@ def blueprint_variablen(blueprint: dict, eingaben: dict[str, Any]) -> dict[str, 
     ``MissingInput``). Template-Variablen gibt es in unseren Blueprints nicht;
     taucht eine auf, schlägt der Test laut fehl statt still falsch zu rechnen.
     """
+    # Ein Tippfehler im Test ({"kWp": 5}) rechnete sonst still mit dem Standardwert.
+    unbekannt = set(eingaben) - set(all_inputs(blueprint))
+    if unbekannt:
+        raise KeyError(f"keine Eingabe des Blueprints: {sorted(unbekannt)}")
     werte: dict[str, Any] = {}
     for name, wert in (blueprint.get("variables") or {}).items():
         if not (isinstance(wert, tuple) and wert[0] == "INPUT"):

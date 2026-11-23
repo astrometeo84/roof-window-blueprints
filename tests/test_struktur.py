@@ -163,7 +163,9 @@ def test_sonneneinfall_sensor():
     assert "device_class" not in sensor, "für Winkel gibt es keine device_class"
     assert set(sensor["attributes"]) == {"cos_einfall", "sonne_trifft_flaeche", "azimut", "neigung"}
     assert "availability" in sensor
-    # Zulässige Schlüssel des Sensor-Schemas (template/sensor.py, schemas.py).
+    # Die Schlüssel, die wir nutzen wollen – eine Teilmenge des Sensor-Schemas
+    # (template/sensor.py, schemas.py; Skill sonnengeometrie, 5). Ein Tippfehler
+    # wie "unit_of_measurment" verwürfe HA still.
     assert set(sensor) <= {"state", "availability", "attributes", "unit_of_measurement",
                            "state_class", "device_class", "icon", "picture", "name"}
 

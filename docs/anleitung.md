@@ -80,6 +80,9 @@ Einträge `- use_blueprint: …` mit eigenem `name` und eigener `unique_id` anle
   2–4 Minuten, nachts alle 20 Minuten. Er springt deshalb in kleinen Schritten.
 - Fehlt der Sonnenstand (z. B. kurz nach einem Neustart), ist der Sensor „nicht verfügbar“ statt
   einen falschen Wert zu zeigen.
+- Bei ganz streifendem Licht kann der Zustand `90.0` zeigen und `sonne_trifft_flaeche` trotzdem
+  `true` sein: Der Zustand ist auf eine Stelle gerundet, `cos_einfall` auf vier. Maßgeblich ist
+  `sonne_trifft_flaeche`.
 - Nachts zeigt der Zustand trotzdem einen Winkel (die Sonne steht dann „unter“ der Erde);
   maßgeblich ist `sonne_trifft_flaeche`.
 - Der Sensor kennt keine Verschattung durch Nachbarhäuser, Bäume oder Gauben; er rechnet rein

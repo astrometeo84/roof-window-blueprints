@@ -273,8 +273,8 @@ den Inhalt als Text (die GitHub App darf `.github/workflows/` nicht ändern).
 | `Tests (Python …)` | Matrix 3.13 und 3.14 (entschieden 23.11.2026), `uv sync --locked`, `uv run pytest -v` |
 | `Home Assistant lädt die Blueprints` | HA-Konfiguration aus `tests/fixtures/` bauen, Automations-Blueprints nach `ha/blueprints/automation/dachfenster/`, Template-Blueprints nach `ha/blueprints/template/dachfenster/` kopieren, dann `frenck/action-home-assistant@v1` mit `version: stable` |
 
-Der dritte Job ist der aussagekräftigste: Home Assistant selbst prüft Aufbau, Selektoren und
-Vorlagen. Die Fixtures enthalten je Blueprint eine minimale und eine vollständig belegte Instanz,
+Der dritte Job lässt Home Assistant selbst die Konfiguration laden; was er erkennt, steht unter
+„Grenze“. Die Fixtures enthalten je Blueprint eine minimale und eine vollständig belegte Instanz,
 die Template-Blueprints über `template:` → `use_blueprint:` in `configuration.yaml`.
 Grenze (geklärt in Etappe 2, Skill `sonnengeometrie` Abschnitt 5): Bei Template-Blueprints
 liefert dieser Job **kein rotes Signal**. Schemafehler einer Instanz verwirft HA still,
@@ -282,7 +282,8 @@ Ladefehler (falscher `path`, fehlende Pflichteingabe) zählen nur als Warnung, u
 ruft `check_config` ohne `--fail-on-warnings` auf. Bei Automations-Blueprints ist es nach dem
 Quelltext vermutlich ähnlich (Annahme, Gegenprobe in Etappe 6). Vorlagen wertet `check_config`
 gar nicht aus. Die eigentliche Sicherung sind deshalb die Tests (`tests/test_struktur.py`,
-`tests/test_vorlagen.py`); der Job fängt vor allem kaputtes YAML und unbekannte Integrationen.
+`tests/test_vorlagen.py`); der Job fängt vor allem kaputtes YAML und fehlende `!include`-Dateien; unbekannte Integrationen
+sind nur Warnungen.
 Ob der Job mit `--fail-on-warnings` laufen soll, entscheidet der Nutzer (offen, Abschnitt 8).
 
 ### 6.2 `release-please.yml` – bei Push auf `main` und von Hand

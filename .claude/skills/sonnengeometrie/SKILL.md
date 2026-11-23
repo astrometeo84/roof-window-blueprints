@@ -37,8 +37,8 @@ cos θ = sin(h) · cos(β) + cos(h) · sin(β) · cos(A_s − A_f)
   aber kein `radians`/`degrees`). `sin`/`cos` erwarten Bogenmaß, `acos` liefert Bogenmaß
   (belegt, ebenda).
 - **cos θ vor `acos` auf [−1, 1] begrenzen.** Rundungsfehler können z. B. 1.0000000002 ergeben;
-  `acos` wirft dann einen Fehler. Begrenzen mit `[[x, -1] | max, 1] | min` oder `clamp`
-  (welche Variante, entscheidet die Umsetzung; im Test beide Grenzen prüfen). `clamp` gibt es
+  `acos` wirft dann einen Fehler. Begrenzt wird mit `clamp(c, -1, 1)` (entschieden in Etappe 3;
+  der Test prüft beide Grenzen mit echten Ausreißern, siehe Testwerte). `clamp` gibt es
   erst **seit HA 2025.4** (https://www.home-assistant.io/template-functions/clamp/) → mit
   `clamp` mindestens `min_version: 2025.4.0`.
 - **`acos` nie mit Standardwert** (`acos(x, 0)`): HA liefert dann außerhalb [−1, 1] still den
@@ -50,9 +50,18 @@ cos θ = sin(h) · cos(β) + cos(h) · sin(β) · cos(A_s − A_f)
 - **Neigung 90:** cos θ = cos(h) · cos(A_s − A_f) (senkrechte Fassade).
 - **`sonne_trifft_flaeche`:** wahr genau dann, wenn h > 0 **und** cos θ > 0. Bei θ = 90° genau
   (cos θ = 0) ist es falsch. Nachts kann cos θ > 0 sein (Sonne unter dem Horizont, aber „vor“ der
-  Fläche), deshalb gehört die Prüfung h > 0 dazu.
-- Ausgabe: θ in ° mit **einer** Nachkommastelle; Attribute `cos_einfall`,
-  `sonne_trifft_flaeche`, `azimut`, `neigung`.
+  Fläche), deshalb gehört die Prüfung h > 0 dazu. Bei h = 0 genau ist es falsch.
+- **Rundungsrauschen bei 90°:** cos 90° ergibt in Gleitkomma etwa 6e-17, nicht 0 (z. B.
+  senkrechte Südfassade, Sonne genau im Osten). Deshalb vergleicht `sonne_trifft_flaeche`
+  cos θ **auf vier Stellen gerundet** mit 0 – wie das Attribut `cos_einfall` es zeigt. Folge:
+  Streifendes Licht mit θ über etwa 89,997° zählt nicht als „trifft“.
+- Ausgabe: θ in ° mit **einer** Nachkommastelle; Attribute `cos_einfall` (vier
+  Nachkommastellen), `sonne_trifft_flaeche`, `azimut`, `neigung`.
+- **Die Formel steht dreimal** im Blueprint (Zustand, `cos_einfall`, `sonne_trifft_flaeche`):
+  Eine Vorlage kann das Ergebnis einer anderen nicht lesen, und Blueprint-`variables` werden bei
+  zustandsbasierten Template-Entitäten nur beim Laden ausgewertet (HA-Doku, Template-Integration:
+  „only resolved when the configuration is loaded or reloaded“). Ein Test prüft über viele
+  Sonnenstände, dass alle drei gleich rechnen.
 
 ### Testwerte 4.1 (äußere Vorgabe, einmal im Test ausgeschrieben)
 
@@ -66,19 +75,54 @@ cos θ = sin(h) · cos(β) + cos(h) · sin(β) · cos(A_s − A_f)
 Zusätzliche Randfälle für Tests: h ≤ 0, θ genau 90°, cos θ minimal über 1 bzw. unter −1,
 Neigung 0 und 90, Azimut 0 und 360, fehlende Attribute beim Sonnenstand.
 
+Werte, die in Gleitkomma-Rechnung (Reihenfolge wie in der Vorlage) cos θ außerhalb [−1, 1]
+ergeben: A_f 180 / β 8 / A_s 180 / h 82 → 1.0000000000000002; A_f 180 / β 8 / A_s 0 / h −82 →
+−1.0000000000000002. Damit prüft der Test die Begrenzung wirklich.
+
 ## 3. Sonnenstand in Home Assistant
 
-- Die Sun-Integration bietet Sensoren **Elevation** („Negative values mean the sun is below the
-  horizon.“) und **Azimuth** („The angle is shown clockwise from north.“). Dieselben Werte stehen
-  „for backward compatibility“ als Attribute an `sun.sun` (belegt:
-  https://www.home-assistant.io/integrations/sun/). Ein Abkündigungshinweis steht dort nicht.
-- **Offen:** genaue Attributnamen an `sun.sun` (erwartet `elevation`, `azimuth`) und
-  Entitäts-IDs der Sensoren; ob die Sensoren standardmäßig aktiviert sind; wie oft aktualisiert
-  wird. Entscheidung, ob die Vorlage `sun.sun`-Attribute oder die Sensoren nutzt, mit Beleg hier
-  nachtragen. Die Doku nennt keine Einheit für h; „Grad“ ergibt sich aus dem Beispiel
-  „0 degrees and -6 degrees“ (Dämmerung).
-- Fehlt der Sonnenstand (Attribut fehlt, `unavailable`), liefert die Vorlage keinen Fantasiewert,
-  sondern ist nicht verfügbar (`availability`). Test dafür.
+„Quelltext“ = HA-Core, Branch `dev`, gelesen am 23.11.2026 (`components/sun/const.py`,
+`entity.py`, `sensor.py`).
+
+- **Entschieden (23.11.2026): Die Vorlagen lesen die Attribute `elevation` und `azimuth` von
+  `sun.sun`**, nicht die Sensoren. Begründung: Die Attribute sind immer da, die Sensoren muss der
+  Nutzer erst aktivieren (siehe unten).
+- **Attribute – belegt im Quelltext.** `sun.sun` hat die Attribute `elevation` und `azimuth`
+  (`const.py`: `ELEVATION = "elevation"`, `AZIMUTH = "azimuth"`), Gleitkommazahlen, auf **zwei
+  Nachkommastellen** gerundet (`entity.py`: `round(…, 2)`). `extra_state_attributes` liefert sie
+  immer, nicht bedingt. Weitere Attribute: `rising`, `next_dawn`, `next_dusk`, `next_midnight`,
+  `next_noon`, `next_rising`, `next_setting`. Die Attribute stehen in `_unrecorded_attributes`
+  (nicht in der Historie).
+- **Zustand** von `sun.sun`: `above_horizon` / `below_horizon`; Grenze im Quelltext
+  `ELEVATION_HORIZON = -0.833` (Refraktion und Sonnenradius). Unsere Prüfung `h > 0` ist
+  absichtlich strenger und unabhängig davon.
+- **Sensoren – belegt im Quelltext.** `sensor.sun_solar_elevation` und `sensor.sun_solar_azimuth`
+  (`ENTITY_ID_SENSOR_FORMAT = "sensor.sun_{}"`), Einheit Grad, `state_class: measurement`,
+  Kategorie Diagnose, **standardmäßig deaktiviert** (`entity_registry_enabled_default=False`).
+- **Doku – belegt** (https://www.home-assistant.io/integrations/sun/): Elevation „Negative values
+  mean the sun is below the horizon.“, Azimuth „The angle is shown clockwise from north.“ (also
+  Kompass wie bei uns). „The sensors are also available as attributes on the `sun.sun` entity
+  for backward compatibility.“ **Kein Abkündigungshinweis** in Doku und Quelltext. Restrisiko:
+  „backward compatibility“ klingt nach einem Weg, den HA irgendwann entfernen könnte – bei einem
+  Hinweis in den Release-Notes auf die Sensoren umstellen.
+- **Aktualisierung – belegt im Quelltext** (`entity.py`, `_PHASE_UPDATES`): Höhe und Azimut
+  werden je nach Phase neu berechnet – Tag (h > 10°) alle 4 min, „small day“ (0–10°) und
+  bürgerliche Dämmerung alle 2 min, nautische Dämmerung 4 min, astronomische 8 min, Nacht 20 min
+  (Kommentar dort: „4 mins is one degree of arc change of the sun“). Liegt der nächste Termin zu
+  nah an einem Phasenwechsel, entfällt er.
+- **Neu rechnen der Vorlage – Annahme, gestützt auf die Doku.** Die Template-Doku sagt
+  „Template entities by default update as soon as any of the referenced data in the template
+  updates.“ Dass auch eine reine Attributänderung von `sun.sun` zählt, steht dort nicht
+  wörtlich; HA verfolgt Entitäten, nicht einzelne Attribute, und eine Attributänderung erzeugt ein
+  `state_changed`-Ereignis. Live-Bestätigung: Der Sensor ändert sich am Tag alle paar Minuten
+  (Skill `ha-testen`). Eine Begrenzung auf einmal pro Minute gilt nur für Vorlagen, die über
+  **alle** Zustände iterieren (`states` ohne Entität), nicht für uns.
+- Die Doku nennt keine Einheit für h; „Grad“ ergibt sich aus dem Beispiel „0 degrees and -6
+  degrees“ (Dämmerung) und der Einheit der Sensoren.
+- **Fehlt der Sonnenstand** (`sun.sun` fehlt, `unavailable`/`unknown` ohne Attribute, Attribut
+  fehlt oder ist keine Zahl), liefert die Vorlage keinen Fantasiewert und keinen
+  Vorlagenfehler: `availability` ist falsch, Zustand und `cos_einfall` sind `none`,
+  `sonne_trifft_flaeche` ist falsch. Geprüft wird mit `is number` (Jinja-Test).
 
 ## 4. Helligkeit aus der PV (Baustein 4.2)
 
@@ -184,11 +228,27 @@ Zusage für ältere Versionen.
   („all automations using it pick up the change the next time Home Assistant reloads them“,
   https://www.home-assistant.io/docs/blueprint/), für Template-Blueprints nichts. Live-Bestätigung
   beim ersten `ha_deploy.py`-Lauf (Skill `ha-testen`).
-- **Optionen und Mindestversion – offen.** Die Doku sagt nicht, welche Optionen (`attributes`,
-  `availability`, `unit_of_measurement`, `device_class`, `state_class`, `delay_on`/`delay_off`)
-  in einem Template-Blueprint gehen und ab welcher Version es Template-Blueprints gibt. Klären mit
-  dem ersten Template-Blueprint (Etappe 3). `min_version` hat das Format `major.minor.patch`, alle
-  drei Teile Pflicht, z. B. `2022.4.0` (https://www.home-assistant.io/docs/blueprint/schema/).
+- **Aufbau – belegt** (mitgeliefertes Beispiel
+  `components/template/blueprints/inverted_binary_sensor.yaml`, `components/template/config.py`):
+  Die Entität steht oben im Blueprint unter dem Plattformschlüssel (`sensor:`), Eingaben kommen
+  über `variables: x: !input x` in die Vorlagen. `name` und `unique_id` stehen in der Instanz
+  neben `use_blueprint` und werden in die Entität übernommen; mehr als eine Entität je Blueprint
+  lehnt HA ab („more than one … entity defined in blueprint“).
+- **Optionen – belegt im Quelltext** (`components/template/sensor.py`, `schemas.py`): Der
+  Sensor kennt `state` (Pflicht), `device_class`, `state_class`, `unit_of_measurement`,
+  `last_reset` (nur mit `state_class: total`) und die gemeinsamen Schlüssel `availability`,
+  `attributes`, `icon`, `picture`, `name`, `unique_id`, `variables`, `default_entity_id`,
+  `conditions`. Keine Kreuzprüfung von `state_class` und Einheit. `tests/test_struktur.py`
+  prüft, dass unser Sensor nur diese Schlüssel nutzt.
+- **Mindestversion.** Seit wann es Template-Blueprints gibt, ist nicht genau belegt; spätestens
+  seit 2024.4 (Glossar in den Release-Notes 2024.4: „A blueprint is a script, automation, or
+  template entity configuration …“). Maßgeblich ist bei uns `clamp` (seit 2025.4) →
+  `min_version: 2025.4.0`; `test_min_version_reicht_fuer_clamp` hält das fest.
+  `min_version` hat das Format `major.minor.patch`, alle drei Teile Pflicht, z. B. `2022.4.0`
+  (https://www.home-assistant.io/docs/blueprint/schema/).
+- **`default_config` bringt in der CI keine eigenen Warnungen – belegt.** Der erste Lauf des
+  HA-Jobs mit `--fail-on-warnings` (PR #2, 23.11.2026) war grün. Die Fixture behält deshalb
+  `default_config:`; sie bringt auch die Sun-Integration (`sun.sun`) mit.
 
 Die Tests bauen diese Funktionen in `tests/conftest.py` nach. Weicht der Nachbau von HA ab
 (z. B. Fehler statt Standardwert), ist der Test wertlos. **Die CI fängt das nicht ab:**

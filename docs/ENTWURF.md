@@ -75,8 +75,14 @@ cos θ = sin(h) · cos(β) + cos(h) · sin(β) · cos(A_s − A_f)
 
 - Zustand: Einfallswinkel θ in ° mit einer Nachkommastelle
   (0 = Sonne senkrecht auf der Fläche, 90 = streifend, > 90 = Sonne hinter der Fläche)
-- Attribute: `cos_einfall`, `sonne_trifft_flaeche` (wahr, wenn h > 0 und cos θ > 0),
-  `azimut`, `neigung` (die eingetragenen Werte; zur Kontrolle und für die Live-Prüfung in 7.5)
+- Attribute: `cos_einfall` (vier Nachkommastellen), `sonne_trifft_flaeche` (wahr, wenn h > 0 und
+  cos θ > 0; cos θ dafür auf vier Stellen gerundet, sonst zählte Rundungsrauschen bei θ = 90°
+  als „trifft“, Skill `sonnengeometrie` Abschnitt 2), `azimut`, `neigung` (die eingetragenen
+  Werte; zur Kontrolle und für die Live-Prüfung in 7.5)
+- Sonnenstand aus den Attributen `elevation` und `azimuth` von `sun.sun` (entschieden 23.11.2026,
+  Skill `sonnengeometrie` Abschnitt 3); fehlt er, ist der Sensor nicht verfügbar
+- `azimut` und `neigung` sind Pflichteingaben ohne Standardwert (entschieden 23.11.2026): Jede
+  Fläche ist anders, ein Standardwert gäbe still falsche Winkel
 
 **Testwerte**
 
@@ -290,9 +296,9 @@ selbst, was die Action macht: `secrets.yaml` nach `ha/` kopieren, Image ziehen, 
 Log, dann `python -m homeassistant --config … --script check_config --fail-on-warnings`. Was dabei
 wegfällt: die Fehler-Annotationen der Action (Problem-Matcher); die Meldungen stehen im Log.
 Bringt `default_config` in der CI eigene Warnungen mit, wird die Fixture-Konfiguration auf die
-nötigen Integrationen verkleinert – Warnungen werden **nicht** unterdrückt. Dass sie keine
-bringt, ist eine Annahme: Nach dem ersten CI-Lauf im Log prüfen, dass unter „General Warnings“
-und unter den einzelnen Domains nichts steht.
+nötigen Integrationen verkleinert – Warnungen werden **nicht** unterdrückt. **Belegt:** Der
+erste Lauf mit `--fail-on-warnings` (PR #2, 23.11.2026) war grün, `default_config` bringt also
+keine eigenen Warnungen mit. Ändert sich das mit einer neuen HA-Version, gilt die Regel oben.
 
 ### 6.2 `release-please.yml` – bei Push auf `main` und von Hand
 
@@ -568,12 +574,17 @@ Nach dem Muster der Live-Tests von aiocontrome (`docs/LIVE_TESTS.md`, `tests/liv
 
 ## 8. Vor dem Bauen prüfen (nicht annehmen)
 
-- Template-Blueprints: eine Entität je Blueprint, Anlegen nur per YAML (Stand 2026); welche Optionen
-  gehen (Attribute, `availability`, Einheit, `device_class`, `delay_on`/`delay_off`); ab welcher
-  HA-Version. Der Nutzer betreibt HA 2026.11.x; `min_version` nach den genutzten Funktionen setzen.
-- Sonnenstand: Attribute von `sun.sun` oder Sensoren der Sun-Integration (Sonnenhöhe,
-  Sonnenazimut); wie oft aktualisiert wird und ob etwas abgekündigt ist
-- Jinja in HA: `sin`, `cos`, `acos`, `pi`
+- ~~Template-Blueprints: Optionen, Mindestversion~~ geklärt in Etappe 3: eine Entität je
+  Blueprint, nur YAML; Optionen laut Quelltext (`state`, `availability`, `attributes`,
+  `unit_of_measurement`, `device_class`, `state_class`, `icon` …); seit wann es
+  Template-Blueprints gibt, ist nicht genau belegt (spätestens 2024.4), maßgeblich ist `clamp`
+  → `min_version: 2025.4.0` (Skill `sonnengeometrie` Abschnitt 5)
+- ~~Sonnenstand: Attribute von `sun.sun` oder Sensoren~~ entschieden: Attribute `elevation` und
+  `azimuth` von `sun.sun`; die Sensoren sind standardmäßig deaktiviert. Aktualisierung am Tag
+  alle 2–4 min, nachts bis 20 min; nichts abgekündigt (Skill `sonnengeometrie` Abschnitt 3)
+- ~~Jinja in HA: `sin`, `cos`, `acos`, `pi`~~ belegt (Skill `sonnengeometrie` Abschnitt 2 und 5)
+- ~~Bringt `default_config` in der CI eigene Warnungen mit?~~ geklärt: nein, erster Lauf mit
+  `--fail-on-warnings` grün (6.1)
 - ~~Pfad nach dem Import~~ geklärt: `use_blueprint: path:` relativ zu `blueprints/template/`
   (Skill `sonnengeometrie` Abschnitt 5)
 - Benachrichtigungsziel für die Companion-App im Blueprint: gängiges Muster

@@ -24,7 +24,7 @@ _Folgt mit den Template-Blueprints (Etappen 3 und 4)._
 - Die CI lässt zusätzlich echtes Home Assistant die Konfiguration prüfen, mit
   `--fail-on-warnings`. Grenze: Schemafehler einer Template-Instanz verwirft HA still, die CI
   bleibt grün; Ladefehler (falscher `path`, fehlende Pflichteingabe) werden erst durch
-  `--fail-on-warnings` rot (Skill `sonnengeometrie`, Abschnitt 5); bei Automations-Blueprints
+  `--fail-on-warnings` rot – laut Quelltext, Gegenprobe in Etappe 3 (Skill `sonnengeometrie`, Abschnitt 5); bei Automations-Blueprints
   vermutlich ähnlich (Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus; ob der Nachbau
   in `conftest.py` zu HA passt, zeigt nur das echte HA. Die Tests sind die eigentliche Sicherung.
 
@@ -55,6 +55,9 @@ Gegenproben: Code absichtlich kaputt gemacht (per `git stash` bzw. `git worktree
 | 2 | HA-Job ohne `--fail-on-warnings` / ohne Kopie der `secrets.yaml` / wieder mit `frenck/action-home-assistant` (Probe mit dem Workflow-Entwurf) | `test_ha_job_prueft_mit_fail_on_warnings` |
 | 2 | `--entrypoint ""` entfernt – **erst nicht erkannt** (Test fand den Begriff im Kommentar, dann nur in einem der zwei `docker run`), Test nachgeschärft: nur Befehlszeilen, jeder Aufruf einzeln | `test_ha_job_prueft_mit_fail_on_warnings` |
 | 2 | `setup-uv@v10` bzw. `@v7` statt vollständiger Version | `test_setup_uv_mit_vollstaendiger_version` |
+| 2 | Exit-Code verschluckt (`--fail-on-warnings \|\| true`, `continue-on-error: true`), `--entrypoint` nur im Kommentar am Zeilenende – **erst nicht erkannt** (Befund `test-manager`), Test nachgeschärft | `test_ha_job_prueft_mit_fail_on_warnings` |
+| 2 | `secrets.yaml` in falsches Ziel kopiert | `test_ha_job_prueft_mit_fail_on_warnings` |
+| 2 | Release-Workflow als `.yaml` mit `setup-uv@v10` – **erst nicht erkannt** (feste Dateinamen, still übersprungen), jetzt per Muster | `test_setup_uv_mit_vollstaendiger_version` |
 
 ## Workflows
 

@@ -167,8 +167,8 @@ Zusage für ältere Versionen.
   Folge: Aufbau, Eingaben und Optionen der Template-Blueprints sichern die Tests
   (`tests/test_struktur.py`), nicht die CI. Deshalb ruft unser HA-Job `check_config` selbst per
   `docker run` **mit** `--fail-on-warnings` auf (entschieden 23.11.2026, `docs/ENTWURF.md` 6.1;
-  im Quelltext: „Exit non-zero if warnings are present“): Fall 2 wird damit rot, Fall 1 bleibt
-  unsichtbar. Gegenprobe beider Fälle mit dem ersten Template-Blueprint (Etappe 3), Ergebnis hier
+  im Quelltext: „Exit non-zero if warnings are present“): Fall 2 wird damit laut Quelltext rot
+  (Annahme bis zur Gegenprobe), Fall 1 bleibt unsichtbar. Gegenprobe beider Fälle mit dem ersten Template-Blueprint (Etappe 3), Ergebnis hier
   nachtragen.
 - **Automations-Blueprints – Annahme, noch nicht gegengeprüft.** Laut Quelltext-Auszug
   validiert `components/automation/config.py` mit `raise_on_errors=False`: Blueprint- und

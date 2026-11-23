@@ -279,8 +279,8 @@ die Template-Blueprints über `template:` → `use_blueprint:` in `configuration
 Grenze (geklärt in Etappe 2, Skill `sonnengeometrie` Abschnitt 5): Schemafehler einer
 Template-Blueprint-Instanz verwirft HA **still** – auch dieser Job bleibt dabei grün. Ladefehler
 (falscher `path`, fehlende Pflichteingabe) und unbekannte Integrationen sind in `check_config` nur
-Warnungen; deshalb läuft die Prüfung mit `--fail-on-warnings` (entschieden 23.11.2026), dann
-werden sie rot. Bei Automations-Blueprints ist es nach dem Quelltext vermutlich ähnlich
+Warnungen; deshalb läuft die Prüfung mit `--fail-on-warnings` (entschieden 23.11.2026). Laut
+Quelltext werden sie dann rot – Annahme, Gegenprobe mit falschem `path` in Etappe 3. Bei Automations-Blueprints ist es nach dem Quelltext vermutlich ähnlich
 (Annahme, Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus. Die eigentliche
 Sicherung sind deshalb die Tests (`tests/test_struktur.py`, `tests/test_vorlagen.py`).
 
@@ -290,7 +290,9 @@ selbst, was die Action macht: `secrets.yaml` nach `ha/` kopieren, Image ziehen, 
 Log, dann `python -m homeassistant --config … --script check_config --fail-on-warnings`. Was dabei
 wegfällt: die Fehler-Annotationen der Action (Problem-Matcher); die Meldungen stehen im Log.
 Bringt `default_config` in der CI eigene Warnungen mit, wird die Fixture-Konfiguration auf die
-nötigen Integrationen verkleinert – Warnungen werden **nicht** unterdrückt.
+nötigen Integrationen verkleinert – Warnungen werden **nicht** unterdrückt. Dass sie keine
+bringt, ist eine Annahme: Nach dem ersten CI-Lauf im Log prüfen, dass unter „General Warnings“
+und unter den einzelnen Domains nichts steht.
 
 ### 6.2 `release-please.yml` – bei Push auf `main` und von Hand
 
@@ -362,7 +364,9 @@ läuft, sobald die Datei im Repo liegt).
   - `version` und `python-version`: unverändert. Neu ist nur der Wert `latest-known` (v10.0.0),
     den wir nicht nutzen.
   - `enable-cache`: Standard `auto` schaltet den Cache seit v10.0.0 bei `release`, Tag-Push,
-    `pull_request_target` und `workflow_run` ab (Schutz vor Cache-Vergiftung). Wir setzen ihn
+    `pull_request_target` und `workflow_run` ab (Schutz vor Cache-Vergiftung; Release-Hinweise
+    v10.0.0 nennen drei Ereignisse, den Tag-Push nennt die Beschreibung von `enable-cache` in
+    `action.yml` v10.4.0). Wir setzen ihn
     ausdrücklich: `true` in `validate.yml`; im Release-Job `false`, weil er veröffentlicht und
     selten läuft – dort zählt Sauberkeit mehr als die paar Sekunden.
   - `prune-cache` (nicht gesetzt): Standard seit **v9.0.0** `false` statt `true`. Der Cache
@@ -578,7 +582,7 @@ Nach dem Muster der Live-Tests von aiocontrome (`docs/LIVE_TESTS.md`, `tests/liv
   macht aber nie rot – Schemafehler werden still verworfen, Ladefehler sind nur Warnungen (6.1,
   Skill `sonnengeometrie` Abschnitt 5). Gegenprobe in der CI mit dem ersten Template-Blueprint.
 - ~~HA-Job mit `--fail-on-warnings`?~~ entschieden: ja, per `docker run` statt der Action (6.1).
-  Ladefehler werden rot, Schemafehler weiterhin nicht.
+  Ladefehler werden laut Quelltext rot (Gegenprobe Etappe 3), Schemafehler weiterhin nicht.
 - ~~`setup-uv` v7 oder neuer?~~ entschieden: `@v10.4.0`, Änderungen geprüft (6.5).
 - ~~Lädt `template.reload` geänderte Template-Blueprints neu?~~ geklärt: ja, der Dienst leert
   vorher den Blueprint-Zwischenspeicher (Quelltext); Live-Bestätigung beim ersten Deploy.

@@ -199,23 +199,40 @@ def test_release_workflow_haengt_alle_blueprints_per_muster_an():
     assert not re.search(r"blueprints/(automation|template)/\S+\.yaml", text), "feste Liste gefunden"
 
 
+def _ohne_kommentare(text):
+    """Nur Befehle zählen: Die Kommentare im Workflow nennen dieselben Begriffe.
+
+    Entfernt ganze Kommentarzeilen und Kommentare am Zeilenende (" #…"; unsere
+    Workflows haben kein "#" in Anführungszeichen) und fügt mit "\\"
+    fortgesetzte Shell-Zeilen zusammen, damit ein Befehl eine Zeile ist.
+    """
+    zeilen = [re.sub(r"\s+#.*$", "", z) for z in text.splitlines() if not z.lstrip().startswith("#")]
+    return re.sub(r"\\\n\s*", " ", "\n".join(zeilen))
+
+
 @pytest.mark.skipif(not VALIDATE_WORKFLOW.is_file(), reason="Workflow legt der Nutzer an")
 def test_ha_job_prueft_mit_fail_on_warnings():
     """Ohne den Schalter bleibt der HA-Job bei Ladefehlern grün (docs/ENTWURF.md 6.1)."""
-    # Nur Befehle zählen: Die Kommentare im Workflow nennen dieselben Begriffe.
-    text = "\n".join(z for z in VALIDATE_WORKFLOW.read_text(encoding="utf-8").splitlines()
-                     if not z.lstrip().startswith("#"))
-    assert re.search(r"--script\s+check_config\s+--fail-on-warnings", text)
+    text = _ohne_kommentare(VALIDATE_WORKFLOW.read_text(encoding="utf-8"))
+    pruefung = re.findall(r"[^\n]*--script\s+check_config\s+--fail-on-warnings[^\n]*", text)
+    assert len(pruefung) == 1, pruefung
+    # Der Schalter nützt nichts, wenn der Exit-Code verschluckt wird.
+    assert "||" not in pruefung[0], pruefung[0]
+    assert "continue-on-error" not in text
     aufrufe = re.findall(r"docker run[^\n]*", text)
     assert aufrufe
     for aufruf in aufrufe:
-        assert '--entrypoint ""' in aufruf, f"ohne leeren Entrypoint startet das Image HA selbst: {aufruf}"
-    assert "secrets.yaml ha/" in text, "secrets.yaml hat früher die Action kopiert"
+        assert re.search(r"--entrypoint[ =](\"\"|'')", aufruf), \
+            f"ohne leeren Entrypoint startet das Image HA selbst: {aufruf}"
+    assert re.search(r"cp\s+tests/fixtures/secrets\.yaml\s+ha/secrets\.yaml", text), \
+        "secrets.yaml hat früher die Action kopiert"
     assert not re.search(r"uses:\s*frenck/action-home-assistant", text), \
         "die Action reicht --fail-on-warnings nicht durch"
 
 
-WORKFLOWS = [w for w in (VALIDATE_WORKFLOW, RELEASE_WORKFLOW) if w.is_file()]
+# Per Muster statt fester Namen: Auch ein dritter Workflow oder eine Datei
+# mit Endung .yaml wird erfasst statt still übersprungen.
+WORKFLOWS = sorted((REPO / ".github" / "workflows").glob("*.y*ml"))
 
 
 @pytest.mark.skipif(not WORKFLOWS, reason="Workflows legt der Nutzer an")

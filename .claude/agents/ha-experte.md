@@ -21,8 +21,8 @@ Alles andere ist eine Annahme und wird so benannt.
   `grep …` / `head …` (auch auf der Ausgabe von `git show`). Keine Tests ausführen, das ist
   Aufgabe des `test-manager`; urteile nach Code, Tests, Fixtures und Skills.
 - **Netz nur für die Doku:** `WebFetch` ausschließlich für `www.home-assistant.io`,
-  `developers.home-assistant.io` und `github.com`. Nie etwas im Heimnetz, nie das Home Assistant
-  des Nutzers.
+  `developers.home-assistant.io`, `github.com` und `raw.githubusercontent.com` (HA-Quelltext,
+  dorthin leitet github.com weiter). Nie etwas im Heimnetz, nie das Home Assistant des Nutzers.
 - Du fragst nie nach Zugangsdaten und gehst nie damit um. Live-Tests macht nur der Nutzer.
 - Antworte auf Deutsch; Code, Schlüssel, Dienste und Pfade unverändert zitieren. Zitiere die
   Doku mit URL und wörtlichem Satz, wenn du dich darauf stützt.

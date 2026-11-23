@@ -474,9 +474,14 @@ Wie bei aiocontrome:
 - zusätzlich verboten (neu gegenüber aiocontrome): Push-Varianten auf `main`
   (`git push origin HEAD:main`, `git push origin main:main`, `git push origin +main` u. Ä.)
   und das Lesen von `.ha.env` per Bash (`cat`, `head`, `tail`, `less`, `grep`).
+- zusätzlich verboten (entschieden in Etappe 3): `git checkout --` und `git restore` – sie
+  verwerfen Änderungen im Arbeitsbaum ohne Rückfrage; Gegenproben laufen über `git stash` oder
+  `git worktree` (7.1). Anlass: In Etappe 3 wurde `git checkout -- .` in einem Wegwerf-Worktree
+  benutzt.
 - zusätzlich erlaubt (neu gegenüber aiocontrome): `WebFetch` nur für `www.home-assistant.io`,
-  `developers.home-assistant.io` und `github.com` – Home Assistant dokumentiert sein Verhalten
-  online, Controme nicht.
+  `developers.home-assistant.io`, `github.com` und `raw.githubusercontent.com` – Home Assistant
+  dokumentiert sein Verhalten online, Controme nicht. `raw.githubusercontent.com` (seit Etappe
+  3): github.com leitet Quelltext-Dateien von HA-Core dorthin weiter.
 
 Die Verbote in `settings.json` sind nur eine **zusätzliche Hürde**: Muster auf Befehlszeilen
 lassen sich umgehen (andere Schreibweise, anderes Programm). Die eigentliche Sicherung ist

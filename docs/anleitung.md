@@ -19,13 +19,22 @@ Oberfläche eingerichtet, sondern in `configuration.yaml` unter `template:` mit 
      genau an diese Stelle.
 2. In `configuration.yaml` unter `template:` eine Instanz anlegen. `path` ist relativ zu
    `blueprints/template/`.
-3. Konfiguration prüfen: Entwicklerwerkzeuge → YAML → „Konfiguration prüfen“.
-4. Neu laden: Entwicklerwerkzeuge → YAML → „Template-Entitäten“. Gab es vorher gar keine
-   Template-Entitäten und fehlt dieser Punkt, Home Assistant einmal neu starten.
-5. Nachsehen, ob der Sensor da ist (Entwicklerwerkzeuge → Zustände). **Fehlt er, hat HA die
-   Instanz verworfen** – Einstellungen → System → Protokolle und die Benachrichtigungen ansehen.
-   Passt eine Instanz nicht zum Blueprint (unbekannter Schlüssel, falsche Eingabe), meldet die
-   Konfigurationsprüfung das nicht.
+3. Konfiguration prüfen: Einstellungen → Werkzeuge (früher „Entwicklerwerkzeuge“) → YAML →
+   „Konfiguration prüfen“. Die Werkzeuge sehen nur Administratoren.
+4. Neu laden: dort unter „YAML-Konfiguration neu laden“ den Punkt „Template-Entitäten“. Steht
+   er nicht in der Liste (es gab vorher keine Template-Entitäten), Home Assistant einmal neu
+   starten.
+5. Nachsehen, ob der Sensor da ist (Werkzeuge → Zustände). **Fehlt er, hat HA die Instanz
+   verworfen** – Einstellungen → System → Protokolle und die Benachrichtigungen ansehen. Ein
+   unbekannter Schlüssel neben `use_blueprint`, `name` und `unique_id` führt dazu; die
+   Konfigurationsprüfung meldet das nicht.
+6. **Namen und Werte der Eingaben prüft HA nicht.** Ein falsch geschriebener Eingabename wird
+   still ignoriert, und ein Wert außerhalb des Bereichs (z. B. `neigung: 400`) wird übernommen.
+   Schreibweise genau wie im Beispiel, Azimut 0–360, Neigung 0–90; die Attribute `azimut` und
+   `neigung` am Sensor zeigen, was angekommen ist.
+
+Die Menüpunkte sind nach der HA-Doku beschrieben; die genaue deutsche Beschriftung wird beim
+ersten Live-Test bestätigt.
 
 Steht in `configuration.yaml` schon `template: !include templates.yaml` o. Ä., gehört die
 Instanz in diese Datei (als weiterer Listeneintrag `- use_blueprint: …`).
@@ -90,5 +99,5 @@ Einträge `- use_blueprint: …` mit eigenem `name` und eigener `unique_id` anle
 
 **Plausibel prüfen:** Bei einer Südfläche ist θ mittags am kleinsten; im Winter ist θ bei
 steilen Flächen kleiner als bei flachen, im Sommer umgekehrt. Nachrechnen lässt es sich mit dem
-aktuellen Sonnenstand (Entwicklerwerkzeuge → Zustände → `sun.sun`, Attribute `elevation`,
+aktuellen Sonnenstand (Werkzeuge → Zustände → `sun.sun`, Attribute `elevation`,
 `azimuth`) und der Formel in `docs/entwicklung.md`.

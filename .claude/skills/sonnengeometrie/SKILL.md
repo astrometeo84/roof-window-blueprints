@@ -110,19 +110,33 @@ ergeben: A_f 180 / β 8 / A_s 180 / h 82 → 1.0000000000000002; A_f 180 / β 8 
   bürgerliche Dämmerung alle 2 min, nautische Dämmerung 4 min, astronomische 8 min, Nacht 20 min
   (Kommentar dort: „4 mins is one degree of arc change of the sun“). Liegt der nächste Termin zu
   nah an einem Phasenwechsel, entfällt er.
-- **Neu rechnen der Vorlage – Annahme, gestützt auf die Doku.** Die Template-Doku sagt
-  „Template entities by default update as soon as any of the referenced data in the template
-  updates.“ Dass auch eine reine Attributänderung von `sun.sun` zählt, steht dort nicht
-  wörtlich; HA verfolgt Entitäten, nicht einzelne Attribute, und eine Attributänderung erzeugt ein
-  `state_changed`-Ereignis. Live-Bestätigung: Der Sensor ändert sich am Tag alle paar Minuten
-  (Skill `ha-testen`). Eine Begrenzung auf einmal pro Minute gilt nur für Vorlagen, die über
+- **Neu rechnen der Vorlage bei reiner Attributänderung – belegt im Quelltext** (Befund
+  `ha-experte`): `core.py` (`StateMachine`) feuert `EVENT_STATE_REPORTED` nur, wenn Zustand
+  **und** Attribute gleich bleiben, sonst `EVENT_STATE_CHANGED`; darauf hört die Verfolgung der
+  Vorlagen (`helpers/event.py`, `async_track_state_change_event`). Doku: „Template entities by
+  default update as soon as any of the referenced data in the template updates.“
+  Live-Bestätigung: Der Sensor ändert sich am Tag alle paar Minuten (Skill `ha-testen`). Eine Begrenzung auf einmal pro Minute gilt nur für Vorlagen, die über
   **alle** Zustände iterieren (`states` ohne Entität), nicht für uns.
 - Die Doku nennt keine Einheit für h; „Grad“ ergibt sich aus dem Beispiel „0 degrees and -6
   degrees“ (Dämmerung) und der Einheit der Sensoren.
 - **Fehlt der Sonnenstand** (`sun.sun` fehlt, `unavailable`/`unknown` ohne Attribute, Attribut
   fehlt oder ist keine Zahl), liefert die Vorlage keinen Fantasiewert und keinen
   Vorlagenfehler: `availability` ist falsch, Zustand und `cos_einfall` sind `none`,
-  `sonne_trifft_flaeche` ist falsch. Geprüft wird mit `is number` (Jinja-Test).
+  `sonne_trifft_flaeche` ist falsch. Geprüft wird mit `is number`: dem eingebauten Jinja-Test
+  (`isinstance(value, Number)`), **nicht** HAs `is_number`, das auch Zahlen-Texte wie „21.5“
+  durchlässt (https://www.home-assistant.io/template-functions/is_number/). Dass HAs
+  Vorlagen-Umgebung den Jinja-Test behält, ist gestützt (sie erbt von
+  `ImmutableSandboxedEnvironment`), aber erst mit dem Live-Test bestätigt.
+- **`availability` falsch → HA rendert Zustand und Attribute gar nicht** (belegt im Quelltext,
+  Befund `ha-experte`: `template_entity.py` setzt `availability` als „super template“ an den
+  Anfang; `helpers/event.py`: „If the super template did not render to True, don't update other
+  templates“). Die `is number`-Abfragen in Zustand und Attributen sind damit zusätzlicher Schutz
+  und halten die Einzeltests aussagekräftig.
+- **Achtung: Wirft die `availability`-Vorlage selbst einen Fehler, gilt der Sensor als
+  verfügbar** (`_update_available`: `self._attr_available = True` bei `TemplateError`). In
+  `availability` deshalb nie etwas, das werfen kann (z. B. `| float` ohne Standardwert).
+- `{{ none }}` ist als Zustand eines Sensors mit `state_class` bzw. Einheit erlaubt (Doku: „must
+  render to a number or to `none`“).
 
 ## 4. Helligkeit aus der PV (Baustein 4.2)
 

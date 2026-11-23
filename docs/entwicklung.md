@@ -81,6 +81,8 @@ Gegenproben: Code absichtlich kaputt gemacht (per `git stash` bzw. `git worktree
 | 3 | Sonneneinfall: Prüfung h > 0 entfernt | `test_nachts_trifft_keine_sonne_auch_wenn_cos_positiv`, `test_hoehe_genau_null_trifft_nicht`, `test_zustand_und_attribute_stimmen_ueberein` |
 | 3 | Sonneneinfall: h ≥ 0 statt h > 0 | `test_hoehe_genau_null_trifft_nicht` |
 | 3 | Sonneneinfall: cos θ vor dem Vergleich nicht gerundet | `test_rundungsrauschen_bei_90_grad_trifft_nicht` |
+| 3 | Sonneneinfall: vor dem Vergleich auf drei statt vier Stellen gerundet – **erst nicht erkannt** (Befund `test-manager`), Test ergänzt | `test_auf_vier_stellen_gerundet_nicht_weniger` |
+| 3 | Sonneneinfall: Rechenreihenfolge im Zustand geändert (`h * pi / 180` statt `h * r`), Ausreißer über 1 verschwinden – **erst nicht erkannt** (Tests prüften ihre Voraussetzung nicht, Befund `test-manager`), Voraussetzung jetzt mit der Vorlage selbst geprüft | `test_cos_knapp_ueber_eins`, `test_cos_knapp_unter_minus_eins` |
 | 3 | Sonneneinfall: `availability` immer wahr | `test_ohne_sonnenstand_nicht_verfuegbar_und_kein_fehler` |
 | 3 | Sonneneinfall: Prüfung auf Zahl im Zustand entfernt (Vorlagenfehler ohne Sonnenstand) | `test_ohne_sonnenstand_nicht_verfuegbar_und_kein_fehler` |
 | 3 | Sonneneinfall: im Zustand A_s + A_f statt A_s − A_f | `test_testwerte_aus_dem_entwurf`, `test_kompass_im_uhrzeigersinn`, `test_zustand_und_attribute_stimmen_ueberein` |

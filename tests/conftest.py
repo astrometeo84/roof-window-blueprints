@@ -144,6 +144,9 @@ def ha_clamp(value: Any, min_value: Any, max_value: Any) -> float:
 
 def make_env(hass: FakeHass) -> Environment:
     env = Environment(undefined=StrictUndefined)
+    # sin/cos/acos absichtlich OHNE Standardwert (HA kennt einen): acos(x, 0)
+    # lieferte außerhalb [-1, 1] still 0 = volle Sonne und verdeckte eine
+    # fehlende Begrenzung. Skill sonnengeometrie, Abschnitt 2.
     mathe = {
         "sin": lambda x: math.sin(float(x)),
         "cos": lambda x: math.cos(float(x)),

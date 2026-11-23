@@ -38,7 +38,12 @@ cos θ = sin(h) · cos(β) + cos(h) · sin(β) · cos(A_s − A_f)
   (belegt, ebenda).
 - **cos θ vor `acos` auf [−1, 1] begrenzen.** Rundungsfehler können z. B. 1.0000000002 ergeben;
   `acos` wirft dann einen Fehler. Begrenzen mit `[[x, -1] | max, 1] | min` oder `clamp`
-  (welche Variante, entscheidet die Umsetzung; im Test beide Grenzen prüfen).
+  (welche Variante, entscheidet die Umsetzung; im Test beide Grenzen prüfen). `clamp` gibt es
+  erst **seit HA 2025.4** (https://www.home-assistant.io/template-functions/clamp/) → mit
+  `clamp` mindestens `min_version: 2025.4.0`.
+- **`acos` nie mit Standardwert** (`acos(x, 0)`): HA liefert dann außerhalb [−1, 1] still den
+  Standardwert, also θ = 0° = volle Sonne, und verdeckt eine fehlende Begrenzung. Der Nachbau in
+  `tests/conftest.py` kennt deshalb absichtlich keinen Standardwert bei `sin`/`cos`/`acos`.
 - **Azimut 0/360:** Die Differenz A_s − A_f geht nur über `cos` ein, daher ist keine
   Normalisierung nötig. Test: A_f = 0 und A_f = 360 liefern dasselbe θ.
 - **Neigung 0:** cos θ = sin(h), θ = 90° − h, unabhängig von beiden Azimuten.
@@ -142,22 +147,33 @@ Zusage für ältere Versionen.
   nicht über die Oberfläche (ebenda).
 - **Mehrere Instanzen – belegt.** Aus einem Blueprint lassen sich mehrere Template-Entitäten
   anlegen (ebenda). Ein Blueprint beschreibt dabei eine Entität.
-- **`frenck/action-home-assistant` prüft mit – mit Lücke, belegt im Quelltext.** Die Action
-  führt im offiziellen Image `python -m homeassistant --config … --script check_config` aus
-  (https://github.com/frenck/action-home-assistant/blob/main/action.yaml, neueste Version
-  v1.4.1, kein v2). `check_config` ruft `async_validate_config` der Template-Integration auf
-  (`helpers/check_config.py`), und die löst `use_blueprint` auf und setzt die Eingaben ein
-  (`components/template/config.py`: `async_inputs_from_config`, `async_substitute`).
-  **Lücke:** Scheitert danach das Schema (`vol.Invalid`), fängt die Template-Integration das
-  selbst ab, schreibt ins Protokoll, legt eine Benachrichtigung an und verwirft den Abschnitt
-  mit `continue`. `check_config` sieht **keinen Fehler**, die CI bleibt grün. Erkannt werden nur
-  Fehler beim Laden des Blueprints (Datei fehlt, YAML kaputt, fehlende Pflichteingabe), sofern
-  sie als `HomeAssistantError` ankommen. Folge: Die Tests müssen Aufbau und Optionen der
-  Template-Blueprints selbst prüfen (`tests/test_struktur.py`); die CI ist hier nur ein
-  zusätzliches Netz. **Offen:** ob ein Ladefehler bei `template` als Fehler oder nur als
-  Warnung zählt (das hängt an `frontend_dependencies`; `--fail-on-warnings` setzt die Action
-  nicht). Gegenprobe mit dem ersten Template-Blueprint (Etappe 3): absichtlich falschen `path`
-  und absichtlich falsche Option in die Fixture, CI-Ergebnis hier nachtragen.
+- **`frenck/action-home-assistant` liefert bei Template-Blueprints kein rotes Signal – belegt im
+  Quelltext.** Die Action führt im offiziellen Image
+  `python -m homeassistant --config … --script check_config` aus, **ohne**
+  `--fail-on-warnings` (https://github.com/frenck/action-home-assistant/blob/main/action.yaml,
+  neueste Version v1.4.1, kein v2). `check_config` ruft `async_validate_config` der
+  Template-Integration auf (`helpers/check_config.py`); die löst `use_blueprint` auf und setzt
+  die Eingaben ein (`components/template/config.py`: `async_inputs_from_config`,
+  `async_substitute`). Dann gibt es zwei Fälle, beide ohne roten Lauf:
+  1. **Schemafehler** (`probatio.Invalid`, früher `vol.Invalid`): fängt die Template-Integration
+     selbst ab, schreibt ins Protokoll, legt eine Benachrichtigung an und verwirft den Abschnitt
+     mit `continue`. `check_config` sieht nichts.
+  2. **Ladefehler** (falscher `path`, YAML kaputt, fehlende Pflichteingabe: `FailedToLoad`,
+     `MissingInput`, Unterklassen von `HomeAssistantError`, `components/blueprint/errors.py`):
+     landen in `_comp_error`. Ein Fehler wird daraus nur, wenn die Domain zu
+     `frontend_dependencies` gehört; `template` gehört nicht dazu → nur **Warnung**. Das Skript
+     endet mit `return 1 if res["except"] or (args.fail_on_warnings and res["warn"]) else 0`
+     (`scripts/check_config.py`), also mit 0.
+  Folge: Aufbau, Eingaben und Optionen der Template-Blueprints sichern die Tests
+  (`tests/test_struktur.py`), nicht die CI. Mit `--fail-on-warnings` (im Quelltext vorhanden:
+  „Exit non-zero if warnings are present“) würde Fall 2 rot, Fall 1 nicht. Gegenprobe beider
+  Fälle mit dem ersten Template-Blueprint (Etappe 3), Ergebnis hier nachtragen.
+- **Automations-Blueprints – Annahme, noch nicht gegengeprüft.** Laut Quelltext-Auszug
+  validiert `components/automation/config.py` mit `raise_on_errors=False`: Blueprint- und
+  Schemafehler werden nur protokolliert, die Automation bleibt mit Status `FAILED_BLUEPRINT`
+  bzw. `FAILED_SCHEMA` erhalten, `check_config` sieht nichts. Gegenprobe mit dem ersten
+  Automations-Blueprint (Etappe 6): absichtlich falsche Eingabe in
+  `tests/fixtures/automations.yaml`, CI-Ergebnis hier nachtragen.
 - **`template.reload` lädt geänderte Blueprint-Dateien neu – belegt im Quelltext.** Der
   Reload-Dienst leert zuerst den Blueprint-Zwischenspeicher:
   `await async_get_blueprints(hass).async_reset_cache()` (`components/template/services.py`),

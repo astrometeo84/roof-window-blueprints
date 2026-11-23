@@ -118,6 +118,7 @@ class _Ha:
         self.pfade: list[str] = []
         self.pruefung = pruefung
         self.fehler = fehler
+        self.warnungen = None
 
     def __call__(self, url, token, pfad):
         if self.fehler:
@@ -126,7 +127,8 @@ class _Ha:
         if pfad.endswith("check_config"):
             if self.pruefung is None:  # unerwartete Antwort statt dict
                 return None
-            return {"result": self.pruefung, "errors": None if self.pruefung == "valid" else "kaputt"}
+            return {"result": self.pruefung, "errors": None if self.pruefung == "valid" else "kaputt",
+                    "warnings": self.warnungen}
         return []
 
 
@@ -158,11 +160,20 @@ def test_trocken_ruft_ha_nicht_auf():
     assert ha.pfade == []
 
 
-@pytest.mark.parametrize("code,hinweis", [(401, "Token"), (403, "Rechte")])
-def test_http_fehler_mit_hinweis(code, hinweis, capsys):
-    fehler = urllib.error.HTTPError("http://ha", code, "nein", {}, None)
+def test_401_nennt_token_und_adminrechte(capsys):
+    """Ohne Adminrechte antwortet HA mit 401, nicht 403 (require_admin)."""
+    fehler = urllib.error.HTTPError("http://ha", 401, "nein", {}, None)
     assert ha_deploy.pruefen_und_neu_laden("http://ha", "geheim", False, aufruf=_Ha(fehler=fehler)) == 1
-    assert hinweis in capsys.readouterr().out
+    ausgabe = capsys.readouterr().out
+    assert "Token" in ausgabe and "Adminrechte" in ausgabe
+
+
+def test_warnungen_der_pruefung_werden_gezeigt(capsys):
+    """Ein falscher use_blueprint-Pfad kommt bei Template-Blueprints nur als Warnung."""
+    ha = _Ha()
+    ha.warnungen = "Template: Failed to load blueprint"
+    assert ha_deploy.pruefen_und_neu_laden("http://ha", "geheim", False, aufruf=ha) == 0
+    assert "Failed to load blueprint" in capsys.readouterr().out
 
 
 def test_gibt_weder_token_noch_adresse_aus(capsys):

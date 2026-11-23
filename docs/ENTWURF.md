@@ -276,9 +276,14 @@ den Inhalt als Text (die GitHub App darf `.github/workflows/` nicht ändern).
 Der dritte Job ist der aussagekräftigste: Home Assistant selbst prüft Aufbau, Selektoren und
 Vorlagen. Die Fixtures enthalten je Blueprint eine minimale und eine vollständig belegte Instanz,
 die Template-Blueprints über `template:` → `use_blueprint:` in `configuration.yaml`.
-Grenze (geklärt in Etappe 2, Skill `sonnengeometrie` Abschnitt 5): Eine Template-Instanz, die
-nicht zum Schema passt, verwirft HA still; `check_config` meldet dann keinen Fehler. Aufbau und
-Optionen der Template-Blueprints prüfen deshalb zusätzlich die Tests.
+Grenze (geklärt in Etappe 2, Skill `sonnengeometrie` Abschnitt 5): Bei Template-Blueprints
+liefert dieser Job **kein rotes Signal**. Schemafehler einer Instanz verwirft HA still,
+Ladefehler (falscher `path`, fehlende Pflichteingabe) zählen nur als Warnung, und die Action
+ruft `check_config` ohne `--fail-on-warnings` auf. Bei Automations-Blueprints ist es nach dem
+Quelltext vermutlich ähnlich (Annahme, Gegenprobe in Etappe 6). Vorlagen wertet `check_config`
+gar nicht aus. Die eigentliche Sicherung sind deshalb die Tests (`tests/test_struktur.py`,
+`tests/test_vorlagen.py`); der Job fängt vor allem kaputtes YAML und unbekannte Integrationen.
+Ob der Job mit `--fail-on-warnings` laufen soll, entscheidet der Nutzer (offen, Abschnitt 8).
 
 ### 6.2 `release-please.yml` – bei Push auf `main` und von Hand
 
@@ -542,9 +547,11 @@ Nach dem Muster der Live-Tests von aiocontrome (`docs/LIVE_TESTS.md`, `tests/liv
   (Skill `sonnengeometrie` Abschnitt 5)
 - Benachrichtigungsziel für die Companion-App im Blueprint: gängiges Muster
 - `device_class` und Einheiten: `illuminance` (lx), `irradiance` (W/m²)
-- ~~Prüft `frenck/action-home-assistant` auch Template-Blueprints mit?~~ geklärt: ja, über
-  `check_config`, aber Schemafehler einer Instanz fallen nicht auf (6.1, Skill `sonnengeometrie`
-  Abschnitt 5). Offen bleibt die Gegenprobe in der CI mit dem ersten Template-Blueprint.
+- ~~Prüft `frenck/action-home-assistant` auch Template-Blueprints mit?~~ geklärt: Sie lädt sie,
+  macht aber nie rot – Schemafehler werden still verworfen, Ladefehler sind nur Warnungen (6.1,
+  Skill `sonnengeometrie` Abschnitt 5). Gegenprobe in der CI mit dem ersten Template-Blueprint.
+- **Offen (Nutzer):** HA-Job mit `--fail-on-warnings` (direkter `docker run` statt der Action,
+  die den Schalter nicht durchreicht)? Dann würden Ladefehler rot, Schemafehler weiterhin nicht.
 - ~~Lädt `template.reload` geänderte Template-Blueprints neu?~~ geklärt: ja, der Dienst leert
   vorher den Blueprint-Zwischenspeicher (Quelltext); Live-Bestätigung beim ersten Deploy.
 - ~~Erforderliche Prüfungen auf dem Release-PR~~ entschieden: schließen und wieder öffnen (6.7)

@@ -12,10 +12,12 @@ Beide Neulade-Aktionen leeren vorher den Blueprint-Zwischenspeicher ihrer
 Domain; geänderte Blueprint-Dateien werden also ohne Neustart neu eingelesen
 (belegt im Quelltext von HA, siehe Skill sonnengeometrie, Abschnitt 5).
 
-Achtung: Die Konfigurationsprüfung meldet einen Template-Blueprint, dessen
-Eingaben nicht zum Schema passen, NICHT als Fehler. HA verwirft den Abschnitt
-dann still und schreibt nur ins Protokoll bzw. eine Benachrichtigung. Nach dem
-Neuladen deshalb immer Protokoll und Benachrichtigungen ansehen.
+Achtung: Die Konfigurationsprüfung meldet Fehler in Template-Blueprints NICHT
+als Fehler. Ein falscher Pfad oder eine fehlende Pflichteingabe kommt nur als
+Warnung (das Skript zeigt sie an); passen die Eingaben nicht zum Schema,
+verwirft HA den Abschnitt still und schreibt nur ins Protokoll bzw. eine
+Benachrichtigung. Nach dem Neuladen deshalb immer Protokoll und
+Benachrichtigungen ansehen.
 
 Aufruf:
     uv run scripts/ha_deploy.py            # kopieren, prüfen, neu laden
@@ -163,11 +165,19 @@ def pruefen_und_neu_laden(url: str, token: str, trocken: bool, aufruf=ha_aufruf)
             print("Home Assistant meldet Fehler, NICHTS neu geladen:")
             print(ergebnis.get("errors") if isinstance(ergebnis, dict) else ergebnis)
             return 1
+        # Warnungen ausgeben: Genau hier meldet HA einen falschen use_blueprint-Pfad
+        # oder eine fehlende Pflichteingabe eines Template-Blueprints – als Warnung,
+        # nicht als Fehler (Skill sonnengeometrie, Abschnitt 5).
+        if ergebnis.get("warnings"):
+            print("Home Assistant meldet Warnungen (trotzdem neu geladen):")
+            print(ergebnis["warnings"])
         for pfad in NEU_LADEN:
             aufruf(url, token, pfad)
     except urllib.error.HTTPError as fehler:
-        hinweis = {401: " (Token falsch oder abgelaufen?)",
-                   403: " (Benutzer ohne die nötigen Rechte?)"}.get(fehler.code, "")
+        # Prüfung und Neuladen verlangen Adminrechte; ohne sie antwortet HA mit 401
+        # (nicht 403): require_admin bzw. async_register_admin_service.
+        hinweis = {401: " (Token falsch, abgelaufen oder Benutzer ohne Adminrechte?)"}.get(
+            fehler.code, "")
         print(f"Home Assistant antwortet mit {fehler.code}{hinweis}")
         return 1
     except urllib.error.URLError as fehler:

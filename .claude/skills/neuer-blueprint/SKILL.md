@@ -72,7 +72,7 @@ ebenfalls.
 - Template-Blueprint: `tests/fixtures/configuration.yaml` → `template:` → `use_blueprint:`,
   eine minimale und eine vollständig belegte Instanz. `path:` relativ zu
   `blueprints/template/`, also `dachfenster/<name>.yaml`. Achtung: Passt eine Instanz nicht zum
-  Schema, verwirft HA sie still und die CI bleibt grün (Skill `sonnengeometrie` Abschnitt 5) –
+  Schema oder ist der `path` falsch, bleibt die CI grün (Skill `sonnengeometrie` Abschnitt 5) –
   Aufbau und Optionen deshalb in `tests/test_struktur.py` selbst prüfen.
 - Automations-Blueprint: `tests/fixtures/automations.yaml`, eine Instanz minimal, eine
   vollständig (jede Eingabe belegt).

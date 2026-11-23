@@ -49,8 +49,9 @@ Quelltext von HA, Skill `sonnengeometrie` Abschnitt 5). Beim ersten Lauf mit ein
 Template-Blueprint trotzdem einmal bestätigen: kleine sichtbare Änderung (z. B. ein Attribut),
 deployen, in den Entwicklerwerkzeugen nachsehen. Ergebnis im Skill `sonnengeometrie` nachtragen.
 
-**Wichtig:** Die Konfigurationsprüfung meldet einen Template-Blueprint mit unpassenden Eingaben
-oder Optionen nicht als Fehler. HA verwirft die Instanz dann still. Deshalb nach jedem Deploy
+**Wichtig:** Die Konfigurationsprüfung meldet Fehler in Template-Blueprints nicht als Fehler:
+falscher Pfad oder fehlende Pflichteingabe nur als Warnung (zeigt `ha_deploy.py` an),
+unpassende Eingaben oder Optionen gar nicht – HA verwirft die Instanz still. Deshalb nach jedem Deploy
 Protokolle und Benachrichtigungen ansehen (Punkt 4) und prüfen, ob die Entität überhaupt da ist.
 
 Einstellungen stehen in `.ha.env` (Vorlage `.ha.env.example`), **nur auf dem PC des Nutzers**.

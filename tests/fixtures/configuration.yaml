@@ -4,9 +4,10 @@
 #
 # Template-Blueprints werden unten unter "template:" mit "use_blueprint:"
 # eingebunden, je eine minimale und eine vollständig belegte Instanz (Skill
-# neuer-blueprint). Achtung: Passen die Eingaben einer Template-Instanz nicht
-# zum Schema, verwirft HA den Abschnitt still – check_config meldet dann
-# keinen Fehler (Skill sonnengeometrie, Abschnitt 5).
+# neuer-blueprint). Achtung: Fehler in einer Template-Instanz machen die CI
+# nicht rot – Schemafehler verwirft HA still, Ladefehler (falscher path,
+# fehlende Pflichteingabe) sind nur Warnungen (Skill sonnengeometrie,
+# Abschnitt 5). Die Tests in tests/test_struktur.py sind die Sicherung.
 default_config:
 
 automation: !include automations.yaml

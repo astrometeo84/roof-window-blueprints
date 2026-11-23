@@ -21,10 +21,11 @@ _Folgt mit den Template-Blueprints (Etappen 3 und 4)._
   Eingaben, vollständige und minimale Instanz, `use_blueprint`-Pfad – kommt mit dem ersten
   Blueprint in Etappe 3), Zugangsdaten.
 - `tests/test_deploy.py`: `scripts/ha_deploy.py` ohne Netz.
-- Die CI lässt zusätzlich echtes Home Assistant die Konfiguration prüfen. Grenze: Eine
-  Template-Blueprint-Instanz mit unpassenden Eingaben verwirft HA still, ohne dass `check_config`
-  einen Fehler meldet (Skill `sonnengeometrie`, Abschnitt 5). Vorlagen wertet `check_config`
-  gar nicht aus; ob der Nachbau in `conftest.py` zu HA passt, zeigt nur das echte HA.
+- Die CI lässt zusätzlich echtes Home Assistant die Konfiguration prüfen. Grenze: Bei
+  Template-Blueprints wird dieser Job nie rot – Schemafehler verwirft HA still, Ladefehler sind
+  nur Warnungen (Skill `sonnengeometrie`, Abschnitt 5); bei Automations-Blueprints vermutlich
+  ähnlich (Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus; ob der Nachbau
+  in `conftest.py` zu HA passt, zeigt nur das echte HA. Die Tests sind die eigentliche Sicherung.
 
 ## Taugen die Tests etwas?
 

@@ -41,8 +41,9 @@ _Helligkeit aus PV (4.2) folgt in Etappe 4._
 - Die CI lässt zusätzlich echtes Home Assistant die Konfiguration prüfen, mit
   `--fail-on-warnings`. Grenze: Schemafehler einer Template-Instanz verwirft HA still, die CI
   bleibt grün; Ladefehler (falscher `path`, fehlende Pflichteingabe) werden erst durch
-  `--fail-on-warnings` rot – laut Quelltext, Gegenprobe in Etappe 3 (Skill `sonnengeometrie`, Abschnitt 5); bei Automations-Blueprints
-  vermutlich ähnlich (Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus; ob der Nachbau
+  `--fail-on-warnings` rot – beides belegt durch die Gegenprobe in PR #3 (Skill
+  `sonnengeometrie`, Abschnitt 5); bei Automations-Blueprints vermutlich ähnlich (Gegenprobe in
+  Etappe 6). Vorlagen wertet `check_config` gar nicht aus; ob der Nachbau
   in `conftest.py` zu HA passt, zeigt nur das echte HA. Die Tests sind die eigentliche Sicherung.
 
 ## Taugen die Tests etwas?
@@ -92,6 +93,8 @@ Gegenproben: Code absichtlich kaputt gemacht (per `git stash` bzw. `git worktree
 | 3 | `min_version` 2025.3.0 trotz `clamp` | `test_min_version_reicht_fuer_clamp` |
 | 3 | Attribut `azimut` zeigt die Neigung | `test_attribute_zeigen_die_eingaben` |
 | 3 | Fixture: falscher `path`, unbekannter Schlüssel, unbekannte Eingabe, fehlende Pflichteingabe | `test_fixture_template_instanzen_passen_zum_blueprint`, `test_fixture_je_template_blueprint_minimal_und_vollstaendig` |
+| 3 | CI, PR #3: falscher `path` in der Fixture (Commit + Revert) | HA-Job **rot** (Exit-Code 1), Tests rot |
+| 3 | CI, PR #3: unbekannter Schlüssel in einer Instanz (Commit + Revert) – **vom HA-Job nicht erkannt** (wie erwartet: still verworfen, nur Log-Meldung) | nur die Tests rot |
 
 ## Workflows
 

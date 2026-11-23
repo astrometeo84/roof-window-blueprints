@@ -285,8 +285,10 @@ die Template-Blueprints über `template:` → `use_blueprint:` in `configuration
 Grenze (geklärt in Etappe 2, Skill `sonnengeometrie` Abschnitt 5): Schemafehler einer
 Template-Blueprint-Instanz verwirft HA **still** – auch dieser Job bleibt dabei grün. Ladefehler
 (falscher `path`, fehlende Pflichteingabe) und unbekannte Integrationen sind in `check_config` nur
-Warnungen; deshalb läuft die Prüfung mit `--fail-on-warnings` (entschieden 23.11.2026). Laut
-Quelltext werden sie dann rot – Annahme, Gegenprobe mit falschem `path` in Etappe 3. Bei Automations-Blueprints ist es nach dem Quelltext vermutlich ähnlich
+Warnungen; deshalb läuft die Prüfung mit `--fail-on-warnings` (entschieden 23.11.2026). Damit
+werden sie rot – **belegt** durch die Gegenprobe in PR #3 (falscher `path` → rot; unbekannter
+Schlüssel in einer Instanz → grün, nur die Tests rot; Skill `sonnengeometrie` Abschnitt 5).
+Bei Automations-Blueprints ist es nach dem Quelltext vermutlich ähnlich
 (Annahme, Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus. Die eigentliche
 Sicherung sind deshalb die Tests (`tests/test_struktur.py`, `tests/test_vorlagen.py`).
 
@@ -591,9 +593,10 @@ Nach dem Muster der Live-Tests von aiocontrome (`docs/LIVE_TESTS.md`, `tests/liv
 - `device_class` und Einheiten: `illuminance` (lx), `irradiance` (W/m²)
 - ~~Prüft `frenck/action-home-assistant` auch Template-Blueprints mit?~~ geklärt: Sie lädt sie,
   macht aber nie rot – Schemafehler werden still verworfen, Ladefehler sind nur Warnungen (6.1,
-  Skill `sonnengeometrie` Abschnitt 5). Gegenprobe in der CI mit dem ersten Template-Blueprint.
+  Skill `sonnengeometrie` Abschnitt 5).
 - ~~HA-Job mit `--fail-on-warnings`?~~ entschieden: ja, per `docker run` statt der Action (6.1).
-  Ladefehler werden laut Quelltext rot (Gegenprobe Etappe 3), Schemafehler weiterhin nicht.
+  Ladefehler werden rot, Schemafehler weiterhin nicht – beides belegt durch die Gegenprobe in
+  PR #3.
 - ~~`setup-uv` v7 oder neuer?~~ entschieden: `@v10.4.0`, Änderungen geprüft (6.5).
 - ~~Lädt `template.reload` geänderte Template-Blueprints neu?~~ geklärt: ja, der Dienst leert
   vorher den Blueprint-Zwischenspeicher (Quelltext); Live-Bestätigung beim ersten Deploy.

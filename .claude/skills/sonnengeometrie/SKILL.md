@@ -225,9 +225,26 @@ Zusage für ältere Versionen.
   Folge: Aufbau, Eingaben und Optionen der Template-Blueprints sichern die Tests
   (`tests/test_struktur.py`), nicht die CI. Deshalb ruft unser HA-Job `check_config` selbst per
   `docker run` **mit** `--fail-on-warnings` auf (entschieden 23.11.2026, `docs/ENTWURF.md` 6.1;
-  im Quelltext: „Exit non-zero if warnings are present“): Fall 2 wird damit laut Quelltext rot
-  (Annahme bis zur Gegenprobe), Fall 1 bleibt unsichtbar. Gegenprobe beider Fälle mit dem ersten Template-Blueprint (Etappe 3), Ergebnis hier
-  nachtragen.
+  im Quelltext: „Exit non-zero if warnings are present“): Fall 2 wird damit rot, Fall 1 bleibt
+  unsichtbar.
+- **Gegenprobe in der CI – belegt (PR #3, 23.11.2026, HA 2026.11.2).** Je ein eigener Commit
+  mit absichtlich kaputter Fixture, danach per Revert zurückgenommen:
+  1. **Falscher `path`** (Fall 2): HA-Job **rot**, Exit-Code 1. Meldung unter „Incorrect
+     config“ (gelb, also Warnung): „Invalid config for 'template' at configuration.yaml, line 27:
+     Failed to load blueprint: Unable to find dachfenster/gibt_es_nicht.yaml“. Unter
+     „Successful config (partial)“ blieb `template:` **leer**: Ein Ladefehler einer einzigen
+     Instanz kostet in der Prüfung den ganzen `template:`-Abschnitt, auch die intakte zweite
+     Instanz. Ob das im laufenden HA genauso ist (alle Template-Entitäten weg), ist nicht geprüft
+     – Annahme, in `docs/anleitung.md` als Warnung vermerkt.
+  2. **Unbekannter Schlüssel** auf Ebene der Instanz (`unbekannt: 1`, Fall 1): HA-Job **grün**,
+     Exit-Code 0, obwohl HA ins Log schreibt: „ERROR:homeassistant.config:Invalid config for
+     'template' at configuration.yaml, line 42: 'unbekannt' is an invalid option for 'template',
+     check: unbekannt“. Der Schlüssel wird also abgelehnt und die Instanz verworfen, nicht
+     geduldet. Gefangen haben es nur die Tests (`test_fixture_template_instanzen_passen_zum_blueprint`).
+  Laut Quelltext (Befund `ha-experte`, nicht gegengeprüft) ebenfalls **rot**: unbekannter
+  Schlüssel **innerhalb** von `use_blueprint:` (`InvalidBlueprintInputs`). Still **grün ohne
+  jede Meldung**, Sensor trotzdem angelegt: unbekannter Eingabename unter `input:` und Werte
+  außerhalb des Selektors – HA prüft beides bei YAML-Instanzen nicht.
 - **Automations-Blueprints – Annahme, noch nicht gegengeprüft.** Laut Quelltext-Auszug
   validiert `components/automation/config.py` mit `raise_on_errors=False`: Blueprint- und
   Schemafehler werden nur protokolliert, die Automation bleibt mit Status `FAILED_BLUEPRINT`

@@ -33,6 +33,11 @@ Oberfläche eingerichtet, sondern in `configuration.yaml` unter `template:` mit 
    Schreibweise genau wie im Beispiel, Azimut 0–360, Neigung 0–90; die Attribute `azimut` und
    `neigung` am Sensor zeigen, was angekommen ist.
 
+**Achtung bei einem falschen `path`:** Die Konfigurationsprüfung meldet ihn als Warnung, und in
+der Prüfung fällt dann der **ganze** `template:`-Abschnitt weg, nicht nur diese Instanz. Ob im
+laufenden HA dann auch die übrigen Template-Entitäten fehlen, ist noch nicht geprüft – Warnung
+in der Prüfung also ernst nehmen und vor dem Neuladen beheben.
+
 Die Menüpunkte sind nach der HA-Doku beschrieben; die genaue deutsche Beschriftung wird beim
 ersten Live-Test bestätigt.
 

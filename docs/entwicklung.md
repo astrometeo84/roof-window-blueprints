@@ -43,6 +43,11 @@ Gegenproben: Code absichtlich kaputt gemacht (per `git stash` bzw. `git worktree
 | 2 | CONTRIBUTING: `perf` löst kein Release aus | `test_contributing_tabelle_passt_zur_konfiguration` |
 | 2 | `ha_deploy.py` ohne `template/reload` | `test_laedt_automationen_und_templates_nach_der_pruefung` |
 | 2 | Nachbau `float` ohne Standardwert liefert still 0.0 (wie Jinja) | `TestNachbau::test_float_ohne_standard_ist_ein_fehler` |
+| 2 | `ha_deploy.py`: gescheitertes scp nicht abgefangen (Traceback mit Adresse) | `test_scp_fehler_ohne_adresse_und_mit_hinweis` |
+| 2 | `ha_deploy.py`: Antwort der Prüfung ohne dict gilt als gültig | `test_unerwartete_antwort_der_pruefung_laedt_nichts` |
+| 2 | `ha_deploy.py`: Neuladen schon mit `HA_URL` ohne `HA_TOKEN` | `test_main_spricht_ha_nur_mit_url_token_und_dateien_an` |
+| 2 | Blueprint mit Endung `.yml` | `test_unter_blueprints_nur_yaml_dateien` |
+| 2 | Netzfehler-Text mit Hostnamen ausgegeben – **erst nicht erkannt** (Test nutzte Fehler ohne Host), Test nachgeschärft | `test_gibt_weder_token_noch_adresse_aus` |
 
 ## Workflows
 

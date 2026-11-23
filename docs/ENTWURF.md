@@ -270,12 +270,15 @@ den Inhalt als Text (die GitHub App darf `.github/workflows/` nicht ändern).
 | Job-Name | Inhalt |
 |---|---|
 | `YAML-Stil` | `uv run --locked yamllint --strict .` |
-| `Tests (Python …)` | Matrix (wled: 3.11–3.13, aiocontrome: 3.13–3.14), `uv sync --locked`, `uv run pytest -v` |
+| `Tests (Python …)` | Matrix 3.13 und 3.14 (entschieden 23.11.2026), `uv sync --locked`, `uv run pytest -v` |
 | `Home Assistant lädt die Blueprints` | HA-Konfiguration aus `tests/fixtures/` bauen, Automations-Blueprints nach `ha/blueprints/automation/dachfenster/`, Template-Blueprints nach `ha/blueprints/template/dachfenster/` kopieren, dann `frenck/action-home-assistant@v1` mit `version: stable` |
 
 Der dritte Job ist der aussagekräftigste: Home Assistant selbst prüft Aufbau, Selektoren und
 Vorlagen. Die Fixtures enthalten je Blueprint eine minimale und eine vollständig belegte Instanz,
 die Template-Blueprints über `template:` → `use_blueprint:` in `configuration.yaml`.
+Grenze (geklärt in Etappe 2, Skill `sonnengeometrie` Abschnitt 5): Eine Template-Instanz, die
+nicht zum Schema passt, verwirft HA still; `check_config` meldet dann keinen Fehler. Aufbau und
+Optionen der Template-Blueprints prüfen deshalb zusätzlich die Tests.
 
 ### 6.2 `release-please.yml` – bei Push auf `main` und von Hand
 
@@ -284,8 +287,12 @@ die Template-Blueprints über `template:` → `use_blueprint:` in `configuration
 1. `googleapis/release-please-action@v5` mit `config-file` und `manifest-file`. Pflegt den
    Release-PR; wird er gemergt, entstehen Tag und GitHub-Release.
 2. Nur wenn ein Release entstanden ist (`needs` + `if: release_created == 'true'`): auschecken,
-   `scripts/check_version.py` gegen den Tag laufen lassen (Sicherheitsnetz), dann **alle vier
-   Blueprint-Dateien** mit `gh release upload "$TAG" … --clobber` ans Release hängen.
+   `scripts/check_version.py` gegen den Tag laufen lassen (Sicherheitsnetz), dann **alle
+   Blueprint-Dateien unter `blueprints/`** per Muster (`shopt -s globstar nullglob`,
+   `blueprints/**/*.yaml`) mit `gh release upload "$TAG" … --clobber` ans Release hängen. Keine
+   feste Liste: Ein neuer Blueprint braucht keine Workflow-Änderung. Voraussetzung: Die
+   Dateinamen sind eindeutig, weil Release-Anhänge keine Ordner haben (Test in 6.4). Findet das
+   Muster nichts, bricht der Schritt ab.
 
 Der zweite Job steht bewusst im selben Workflow: Was der Bot mit dem Standard-Token anlegt (Tag,
 Release, PR), startet keine anderen Workflows. Ein eigener Workflow auf `release: published` liefe nie.
@@ -294,15 +301,17 @@ Release, PR), startet keine anderen Workflows. Ein eigener Workflow auf `release
 
 - `.release-please-config.json`: `release-type: simple`, `package-name: roof-window-blueprints`,
   `changelog-path: CHANGELOG.md`, `include-component-in-tag: false`, `draft: false`,
-  `prerelease: false`, `extra-files`: die vier Blueprint-Dateien.
+  `prerelease: false`, `extra-files`: die Blueprint-Dateien. Startet leer (Etappe 2, noch keine
+  Blueprints) und wächst mit jedem Blueprint; das ist die einzige Stelle der Release-Kette, die
+  ein neuer Blueprint berührt (Skill `neuer-blueprint`).
 - `changelog-sections` deutsch wie bei wled: `feat` → Hinzugefügt, `fix` → Behoben,
   `perf` → Geändert; `docs`, `test`, `ci`, `chore` versteckt (`hidden: true`).
 - Jeder **sichtbare** Abschnitt löst einen Release-PR aus. Bei wled ist `refactor` sichtbar,
   CONTRIBUTING.md sagt aber „keine Version“. Hier einheitlich: `refactor` ebenfalls verstecken,
   und die Tabelle in CONTRIBUTING.md muss zur Konfiguration passen.
 - `.release-please-manifest.json` startet mit `{".": "0.0.0"}`; das erste `feat:` ergibt 0.1.0.
-- Für die 0.x-Phase `bump-minor-pre-major: true` erwägen, sonst macht ein `feat!:` sofort 1.0.0
-  (wled nutzt `false`, startete aber bei 1.0.0).
+- `bump-minor-pre-major: true` (entschieden 23.11.2026): In der 0.x-Phase hebt ein `feat!:` die
+  zweite Stelle an statt sofort 1.0.0 (wled nutzt `false`, startete aber bei 1.0.0).
 
 ### 6.4 Versionsnummer
 
@@ -316,10 +325,12 @@ Steht nur im Kopf jeder Blueprint-Datei, weil das Blueprint-Schema kein Versions
 # prüft beim Release, dass sie zum Tag passt.
 ```
 
-Tests halten fest: Markierung in jedem Blueprint vorhanden; Version nur in den Blueprints;
-`pyproject.toml` bleibt bei `"0"` und steht nicht in `extra-files`; `uv.lock` passt zur
-`pyproject.toml`; `extra-files` und die Upload-Liste im Release-Workflow nennen genau die
-Blueprint-Dateien.
+Tests halten fest: Markierung in jedem Blueprint vorhanden und gleich der Version im Manifest;
+`pyproject.toml` bleibt bei `"0"` und steht nicht in `extra-files`; `uv.lock` führt die
+Projektversion `"0"` (Datei lesen wie bei wled; ob sie sonst aktuell ist, prüft die CI mit
+`--locked`); `extra-files` nennt genau die Dateien unter `blueprints/`; die Dateinamen unter
+`blueprints/` sind eindeutig; der Release-Workflow hängt per Muster an statt per Liste (Test
+läuft, sobald die Datei im Repo liegt).
 
 ### 6.5 Festgenagelte Versionen (jeweils mit Begründung als Kommentar)
 
@@ -359,11 +370,11 @@ zurücksetzen.
 - Das Ruleset `release-tags` der Controme-Repos **nicht unverändert** übernehmen: Dort setzt der
   Nutzer Tags selbst, hier legt release-please den Tag an. Verbietet das Ruleset das Anlegen von
   `v*`-Tags, scheitert das Release.
-- **Offen:** Ein Release-PR, den release-please mit dem Standard-Token öffnet, startet keine
-  Workflows. Sind Prüfungen erforderlich, bleibt er blockiert. Möglichkeiten: Release-PR einmal
-  schließen und wieder öffnen (dann laufen die Prüfungen), release-please ein Token einer eigenen
-  kleinen GitHub App geben (nicht die App von Claude Code), oder die Release-PR-Branches von den
-  Pflichtprüfungen ausnehmen. Wie es bei wled-matrix-display heute läuft, klärt der Nutzer.
+- **Entschieden (23.11.2026):** Ein Release-PR, den release-please mit dem Standard-Token öffnet,
+  startet keine Workflows; mit Pflichtprüfungen bliebe er blockiert. Der Nutzer schließt den
+  Release-PR vor dem Merge einmal und öffnet ihn wieder, dann laufen die Prüfungen (Schritt in
+  CONTRIBUTING.md). Verworfen: eigenes App-Token für release-please, Ausnahme der
+  Release-Branches von den Pflichtprüfungen.
 
 ## 7. Claude Code im Repo
 
@@ -527,13 +538,17 @@ Nach dem Muster der Live-Tests von aiocontrome (`docs/LIVE_TESTS.md`, `tests/liv
 - Sonnenstand: Attribute von `sun.sun` oder Sensoren der Sun-Integration (Sonnenhöhe,
   Sonnenazimut); wie oft aktualisiert wird und ob etwas abgekündigt ist
 - Jinja in HA: `sin`, `cos`, `acos`, `pi`
-- Pfad nach dem Import (`blueprints/<domain>/<autor>/…`) für die `use_blueprint`-Beispiele
+- ~~Pfad nach dem Import~~ geklärt: `use_blueprint: path:` relativ zu `blueprints/template/`
+  (Skill `sonnengeometrie` Abschnitt 5)
 - Benachrichtigungsziel für die Companion-App im Blueprint: gängiges Muster
 - `device_class` und Einheiten: `illuminance` (lx), `irradiance` (W/m²)
-- Prüft `frenck/action-home-assistant` auch Template-Blueprints mit?
-- Lädt `template.reload` geänderte Template-Blueprints neu (für `ha_deploy.py`)?
-- Erforderliche Prüfungen auf dem Release-PR (Abschnitt 6.7, offen)
-- `bump-minor-pre-major` für die 0.x-Phase (Abschnitt 6.3)
+- ~~Prüft `frenck/action-home-assistant` auch Template-Blueprints mit?~~ geklärt: ja, über
+  `check_config`, aber Schemafehler einer Instanz fallen nicht auf (6.1, Skill `sonnengeometrie`
+  Abschnitt 5). Offen bleibt die Gegenprobe in der CI mit dem ersten Template-Blueprint.
+- ~~Lädt `template.reload` geänderte Template-Blueprints neu?~~ geklärt: ja, der Dienst leert
+  vorher den Blueprint-Zwischenspeicher (Quelltext); Live-Bestätigung beim ersten Deploy.
+- ~~Erforderliche Prüfungen auf dem Release-PR~~ entschieden: schließen und wieder öffnen (6.7)
+- ~~`bump-minor-pre-major`~~ entschieden: `true` (6.3)
 
 ## 9. Etappen
 

@@ -125,10 +125,52 @@ Belegt (https://www.home-assistant.io/template-functions/):
 - `float` mit optionalem Standardwert, wenn die Umwandlung scheitert.
 - `has_value`: Entität existiert und ist nicht `unavailable`/`unknown`.
 
-Offen (`docs/ENTWURF.md` Abschnitt 8): Template-Blueprints – Optionen (`attributes`,
-`availability`, `unit_of_measurement`, `device_class`, `state_class`), Pfad
-`blueprints/template/<autor>/…`, ab welcher HA-Version, ob `template.reload` geänderte
-Template-Blueprints neu lädt, ob `frenck/action-home-assistant` sie mitprüft.
+### Template-Blueprints (geklärt am 23.11.2026 für Etappe 2)
+
+„Quelltext“ = HA-Core, Branch `dev` am 23.11.2026; gilt als belegt für das Verhalten, nicht als
+Zusage für ältere Versionen.
+
+- **Pfad – belegt.** `use_blueprint: path:` ist relativ zu `config/blueprints/template/`; das
+  Beispiel der Doku: `path: homeassistant/inverted_binary_sensor.yaml` für die Datei
+  `config/blueprints/template/homeassistant/inverted_binary_sensor.yaml`
+  (https://www.home-assistant.io/integrations/template/, Abschnitt „Using blueprints“). Im
+  Quelltext: `BLUEPRINT_FOLDER = "blueprints"` (`components/blueprint/const.py`), Ordner
+  `hass.config.path(BLUEPRINT_FOLDER, self.domain)` (`components/blueprint/models.py`), Domain
+  `template` (`components/template/const.py`). Für die Beispiele in `docs/anleitung.md` also
+  `path: <autor>/flaeche_sonneneinfall.yaml`.
+- **Nur YAML – belegt.** Die Doku beschreibt Template-Blueprints nur über `configuration.yaml`,
+  nicht über die Oberfläche (ebenda).
+- **Mehrere Instanzen – belegt.** Aus einem Blueprint lassen sich mehrere Template-Entitäten
+  anlegen (ebenda). Ein Blueprint beschreibt dabei eine Entität.
+- **`frenck/action-home-assistant` prüft mit – mit Lücke, belegt im Quelltext.** Die Action
+  führt im offiziellen Image `python -m homeassistant --config … --script check_config` aus
+  (https://github.com/frenck/action-home-assistant/blob/main/action.yaml, neueste Version
+  v1.4.1, kein v2). `check_config` ruft `async_validate_config` der Template-Integration auf
+  (`helpers/check_config.py`), und die löst `use_blueprint` auf und setzt die Eingaben ein
+  (`components/template/config.py`: `async_inputs_from_config`, `async_substitute`).
+  **Lücke:** Scheitert danach das Schema (`vol.Invalid`), fängt die Template-Integration das
+  selbst ab, schreibt ins Protokoll, legt eine Benachrichtigung an und verwirft den Abschnitt
+  mit `continue`. `check_config` sieht **keinen Fehler**, die CI bleibt grün. Erkannt werden nur
+  Fehler beim Laden des Blueprints (Datei fehlt, YAML kaputt, fehlende Pflichteingabe), sofern
+  sie als `HomeAssistantError` ankommen. Folge: Die Tests müssen Aufbau und Optionen der
+  Template-Blueprints selbst prüfen (`tests/test_struktur.py`); die CI ist hier nur ein
+  zusätzliches Netz. **Offen:** ob ein Ladefehler bei `template` als Fehler oder nur als
+  Warnung zählt (das hängt an `frontend_dependencies`; `--fail-on-warnings` setzt die Action
+  nicht). Gegenprobe mit dem ersten Template-Blueprint (Etappe 3): absichtlich falschen `path`
+  und absichtlich falsche Option in die Fixture, CI-Ergebnis hier nachtragen.
+- **`template.reload` lädt geänderte Blueprint-Dateien neu – belegt im Quelltext.** Der
+  Reload-Dienst leert zuerst den Blueprint-Zwischenspeicher:
+  `await async_get_blueprints(hass).async_reset_cache()` (`components/template/services.py`),
+  danach liest er `configuration.yaml` neu. Ebenso `automation.reload`
+  (`components/automation/services.py`). Die Doku sagt für Automations-Blueprints dasselbe
+  („all automations using it pick up the change the next time Home Assistant reloads them“,
+  https://www.home-assistant.io/docs/blueprint/), für Template-Blueprints nichts. Live-Bestätigung
+  beim ersten `ha_deploy.py`-Lauf (Skill `ha-testen`).
+- **Optionen und Mindestversion – offen.** Die Doku sagt nicht, welche Optionen (`attributes`,
+  `availability`, `unit_of_measurement`, `device_class`, `state_class`, `delay_on`/`delay_off`)
+  in einem Template-Blueprint gehen und ab welcher Version es Template-Blueprints gibt. Klären mit
+  dem ersten Template-Blueprint (Etappe 3). `min_version` hat das Format `major.minor.patch`, alle
+  drei Teile Pflicht, z. B. `2022.4.0` (https://www.home-assistant.io/docs/blueprint/schema/).
 
 Die Tests bauen diese Funktionen in `tests/conftest.py` nach. Weicht der Nachbau von HA ab
 (z. B. Fehler statt Standardwert), ist der Test wertlos – daher prüft die CI zusätzlich mit

@@ -42,8 +42,8 @@ Sicherung ist das Ruleset auf GitHub; daran ändert eine Erlaubnis im Container 
   setzen, `CHANGELOG.md` nicht anfassen. Die Version steht nur im Kopf jeder Blueprint-Datei
   (`# x-release-please-version`).
 - Commits nach Conventional Commits, auf Deutsch, so formuliert, dass sie im CHANGELOG
-  verständlich sind. `feat` und `fix` erscheinen im CHANGELOG; `docs`, `test`, `ci`, `chore`,
-  `refactor` nicht.
+  verständlich sind. `feat`, `fix` und `perf` erscheinen im CHANGELOG und lösen ein Release aus;
+  `docs`, `test`, `ci`, `chore`, `refactor` nicht.
 - Bricht eine Änderung bestehende Einrichtungen (Eingabe umbenannt oder entfernt):
   `feat!:` plus `BREAKING CHANGE:` im Rumpf.
 

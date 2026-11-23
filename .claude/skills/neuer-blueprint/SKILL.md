@@ -50,12 +50,16 @@ ebenfalls.
 
 ## 3. Release-Kette (nur bei neuem Blueprint)
 
-- `.release-please-config.json` → `extra-files`: Pfad ergänzen.
-- `scripts/check_version.py`: Liste der Blueprint-Dateien (falls nicht per Glob).
-- Upload-Liste in `.github/workflows/release-please.yml` (`gh release upload … --clobber`):
-  **nicht selbst ändern**, die genaue Zeile als Text an den Nutzer geben.
-- `tests/test_struktur.py`: Erwartete Blueprint-Liste; die Tests zu Versionsmarkierung,
-  `extra-files` und Upload-Liste müssen den neuen Pfad sehen.
+- `.release-please-config.json` → `extra-files`: Pfad ergänzen. **Das ist die einzige Stelle.**
+  `tests/test_struktur.py::test_extra_files_nennt_genau_die_blueprints` schlägt an, wenn er fehlt.
+- Nichts zu tun in `scripts/check_version.py` und im Release-Workflow: Beide nehmen alle Dateien
+  unter `blueprints/` per Muster (`blueprints/**/*.yaml`). Der Workflow muss dafür **nicht**
+  geändert werden.
+- Dafür muss der **Dateiname** unter `blueprints/` eindeutig sein, auch über Automation und
+  Template hinweg: Release-Anhänge haben keine Ordner, und `--clobber` überschriebe eine
+  gleichnamige Datei still (`test_blueprint_dateinamen_sind_eindeutig`).
+- Ordner nur `blueprints/automation/dachfenster/` oder `blueprints/template/dachfenster/`
+  (`test_blueprint_liegt_in_bekanntem_ordner`); andere kopiert die CI nicht.
 
 ## 4. Tests nachziehen
 
@@ -66,13 +70,16 @@ ebenfalls.
 ## 5. CI-Fixtures
 
 - Template-Blueprint: `tests/fixtures/configuration.yaml` → `template:` → `use_blueprint:`,
-  eine minimale und eine vollständig belegte Instanz.
+  eine minimale und eine vollständig belegte Instanz. `path:` relativ zu
+  `blueprints/template/`, also `dachfenster/<name>.yaml`. Achtung: Passt eine Instanz nicht zum
+  Schema, verwirft HA sie still und die CI bleibt grün (Skill `sonnengeometrie` Abschnitt 5) –
+  Aufbau und Optionen deshalb in `tests/test_struktur.py` selbst prüfen.
 - Automations-Blueprint: `tests/fixtures/automations.yaml`, eine Instanz minimal, eine
   vollständig (jede Eingabe belegt).
 - Referenzierte Entitäten als Template-Sensoren in `configuration.yaml` anlegen.
 - Nur Eingaben, die es wirklich gibt.
-- Kopierziel im Workflow (`ha/blueprints/<domain>/dachfenster/`) prüfen; Änderungen daran als
-  Text an den Nutzer.
+- Kopierziel im Workflow (`ha/blueprints/<domain>/dachfenster/`) kopiert beide Ordner per
+  Muster; nur ein neuer Ordner bräuchte eine Workflow-Änderung (dann als Text an den Nutzer).
 
 ## 6. Doku
 

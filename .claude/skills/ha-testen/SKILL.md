@@ -43,9 +43,15 @@ uv run scripts/ha_deploy.py
 `--trocken` zeigt Ziel und Dateien und ändert nichts. Ohne `--trocken` kopiert das Skript beide
 Blueprint-Arten aus dem Arbeitsverzeichnis (`blueprints/automation/dachfenster/`,
 `blueprints/template/dachfenster/`), lässt HA die Konfiguration prüfen und lädt Automationen
-**und** Template-Entitäten neu. Ein Neustart sollte nicht nötig sein; ob `template.reload`
-geänderte Template-Blueprints wirklich neu lädt, ist noch offen (`docs/ENTWURF.md` Abschnitt 8)
-– im Zweifel einmal HA neu starten und das Ergebnis im Skill nachtragen.
+**und** Template-Entitäten neu. Ein Neustart ist nicht nötig: Beide Neulade-Dienste leeren
+vorher den Blueprint-Zwischenspeicher und lesen geänderte Blueprint-Dateien neu ein (belegt im
+Quelltext von HA, Skill `sonnengeometrie` Abschnitt 5). Beim ersten Lauf mit einem
+Template-Blueprint trotzdem einmal bestätigen: kleine sichtbare Änderung (z. B. ein Attribut),
+deployen, in den Entwicklerwerkzeugen nachsehen. Ergebnis im Skill `sonnengeometrie` nachtragen.
+
+**Wichtig:** Die Konfigurationsprüfung meldet einen Template-Blueprint mit unpassenden Eingaben
+oder Optionen nicht als Fehler. HA verwirft die Instanz dann still. Deshalb nach jedem Deploy
+Protokolle und Benachrichtigungen ansehen (Punkt 4) und prüfen, ob die Entität überhaupt da ist.
 
 Einstellungen stehen in `.ha.env` (Vorlage `.ha.env.example`), **nur auf dem PC des Nutzers**.
 Fehlt die Datei: dem Nutzer die Vorlage zeigen und ihn bitten, sie anzulegen. Den Inhalt nie
@@ -55,7 +61,8 @@ lesen, ausgeben oder erfragen (Skill `security-secrets`).
 
 Passend zur Änderung eine kurze Liste geben, zum Beispiel:
 
-- **Template-Blueprints:** Entwicklerwerkzeuge → Zustände, Sensor suchen. Zustand und Attribute
+- **Template-Blueprints:** Entwicklerwerkzeuge → Zustände, Sensor suchen. Fehlt er ganz, hat HA
+  die Instanz verworfen → Protokolle. Zustand und Attribute
   (`cos_einfall`, `sonne_trifft_flaeche`, `azimut`, `neigung` bzw. `einstrahlung_w_m2`,
   `pv_leistung_kw`, `kwp`, `performance_ratio`) plausibel? Einheit und Gerätetyp richtig?
 - **Sonneneinfall:** mit dem aktuellen Sonnenstand (`sun.sun`) vergleichen; Plausibilität:

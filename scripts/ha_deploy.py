@@ -116,7 +116,17 @@ def kopieren(ziel: str, trocken: bool, quelle: Path | None = None) -> int:
             entfernt = ziel.rstrip("/") + "/" + str(PurePosixPath(*relativ.parts))
             print("scp  ->", relativ)
             if not trocken:
-                subprocess.run(["scp", "-q", str(quelle / relativ), entfernt], check=True)
+                try:
+                    subprocess.run(["scp", "-q", str(quelle / relativ), entfernt], check=True)
+                except subprocess.CalledProcessError as fehler:
+                    # Eigene Meldung statt Traceback: Der Traceback zeigte die
+                    # Befehlszeile samt Adresse. scp legt fehlende Ordner nicht an.
+                    raise SystemExit(
+                        f"scp fehlgeschlagen (Rückgabe {fehler.returncode}) bei {relativ}.\n"
+                        f"Gibt es den Ordner {PurePosixPath(*relativ.parent.parts)}/ unter "
+                        "HA_BLUEPRINT_ZIEL? Einmalig anlegen, z. B. im Terminal des SSH-Add-ons "
+                        "mit mkdir -p."
+                    ) from None
             continue
         datei = Path(ziel) / relativ
         print("copy ->", relativ)
@@ -148,9 +158,10 @@ def pruefen_und_neu_laden(url: str, token: str, trocken: bool, aufruf=ha_aufruf)
         return 0
     try:
         ergebnis = aufruf(url, token, "/api/config/core/check_config")
-        if isinstance(ergebnis, dict) and ergebnis.get("result") != "valid":
+        # Nur ein ausdrückliches "valid" gilt; eine unerwartete Antwort ist ein Fehler.
+        if not isinstance(ergebnis, dict) or ergebnis.get("result") != "valid":
             print("Home Assistant meldet Fehler, NICHTS neu geladen:")
-            print(ergebnis.get("errors") or ergebnis)
+            print(ergebnis.get("errors") if isinstance(ergebnis, dict) else ergebnis)
             return 1
         for pfad in NEU_LADEN:
             aufruf(url, token, pfad)
@@ -160,7 +171,8 @@ def pruefen_und_neu_laden(url: str, token: str, trocken: bool, aufruf=ha_aufruf)
         print(f"Home Assistant antwortet mit {fehler.code}{hinweis}")
         return 1
     except urllib.error.URLError as fehler:
-        print(f"Home Assistant nicht erreichbar: {fehler.reason}")
+        # Nur die Art des Fehlers: Der Text (fehler.reason) kann den Hostnamen enthalten.
+        print(f"Home Assistant nicht erreichbar ({type(fehler.reason).__name__})")
         return 1
     print("fertig – jetzt Einstellungen → System → Protokolle und die Benachrichtigungen ansehen:\n"
           "ein Template-Blueprint mit falschen Eingaben fällt bei der Prüfung nicht auf.")

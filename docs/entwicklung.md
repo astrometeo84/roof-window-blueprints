@@ -16,12 +16,15 @@ _Folgt mit den Template-Blueprints (Etappen 3 und 4)._
   `is_state`, `has_value`, `sin`, `cos`, `acos`, `pi`, `clamp`, `float` (mit HA-Verhalten: ohne
   Standardwert ist eine unbrauchbare Eingabe ein Fehler). `tests/test_vorlagen.py::TestNachbau`
   prüft den Nachbau selbst.
-- `tests/test_struktur.py`: Versionskopf, Release-Kette, eindeutige Dateinamen, CI-Fixtures,
-  Zugangsdaten.
+- `tests/test_struktur.py`: Versionskopf, Release-Kette, eindeutige Dateinamen, nur `.yaml`
+  unter `blueprints/`, Form der CI-Fixtures (die Prüfung der Eingaben je Blueprint – nur echte
+  Eingaben, vollständige und minimale Instanz, `use_blueprint`-Pfad – kommt mit dem ersten
+  Blueprint in Etappe 3), Zugangsdaten.
 - `tests/test_deploy.py`: `scripts/ha_deploy.py` ohne Netz.
 - Die CI lässt zusätzlich echtes Home Assistant die Konfiguration prüfen. Grenze: Eine
   Template-Blueprint-Instanz mit unpassenden Eingaben verwirft HA still, ohne dass `check_config`
-  einen Fehler meldet (Skill `sonnengeometrie`, Abschnitt 5).
+  einen Fehler meldet (Skill `sonnengeometrie`, Abschnitt 5). Vorlagen wertet `check_config`
+  gar nicht aus; ob der Nachbau in `conftest.py` zu HA passt, zeigt nur das echte HA.
 
 ## Taugen die Tests etwas?
 

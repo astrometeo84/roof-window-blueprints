@@ -92,6 +92,19 @@ def test_scp_ruft_je_datei_scp_mit_schraegstrich(quelle, monkeypatch):
     ]
 
 
+def test_scp_fehler_ohne_adresse_und_mit_hinweis(quelle, monkeypatch, capsys):
+    """scp legt fehlende Ordner nicht an; die Meldung darf die Adresse nicht zeigen."""
+    def scheitert(befehl, check):
+        raise ha_deploy.subprocess.CalledProcessError(1, befehl)
+
+    monkeypatch.setattr(ha_deploy.subprocess, "run", scheitert)
+    with pytest.raises(SystemExit) as fehler:
+        ha_deploy.kopieren("root@ha-geheim.example:/config/blueprints/", trocken=False, quelle=quelle)
+    meldung = str(fehler.value) + capsys.readouterr().out
+    assert "automation/dachfenster/" in meldung and "mkdir -p" in meldung
+    assert "ha-geheim.example" not in meldung
+
+
 def test_ohne_blueprints_wird_nichts_kopiert(tmp_path):
     leer = tmp_path / "blueprints"
     leer.mkdir()
@@ -111,6 +124,8 @@ class _Ha:
             raise self.fehler
         self.pfade.append(pfad)
         if pfad.endswith("check_config"):
+            if self.pruefung is None:  # unerwartete Antwort statt dict
+                return None
             return {"result": self.pruefung, "errors": None if self.pruefung == "valid" else "kaputt"}
         return []
 
@@ -127,6 +142,12 @@ def test_laedt_automationen_und_templates_nach_der_pruefung():
 
 def test_laedt_nichts_bei_fehlerhafter_konfiguration():
     ha = _Ha(pruefung="invalid")
+    assert ha_deploy.pruefen_und_neu_laden("http://ha", "geheim", False, aufruf=ha) == 1
+    assert ha.pfade == ["/api/config/core/check_config"]
+
+
+def test_unerwartete_antwort_der_pruefung_laedt_nichts():
+    ha = _Ha(pruefung=None)
     assert ha_deploy.pruefen_und_neu_laden("http://ha", "geheim", False, aufruf=ha) == 1
     assert ha.pfade == ["/api/config/core/check_config"]
 
@@ -154,6 +175,25 @@ def test_gibt_weder_token_noch_adresse_aus(capsys):
     ausgabe = capsys.readouterr()
     for geheim in (token, "192.0.2.7"):
         assert geheim not in ausgabe.out + ausgabe.err
+
+
+@pytest.mark.parametrize(
+    "cfg,anzahl,erwartet_aufrufe",
+    [
+        ({"HA_URL": "http://ha", "HA_TOKEN": "t"}, 2, 1),
+        ({"HA_URL": "http://ha"}, 2, 0),
+        ({"HA_TOKEN": "t"}, 2, 0),
+        ({"HA_URL": "http://ha", "HA_TOKEN": "t"}, 0, 0),  # nichts kopiert → HA nicht stören
+    ],
+)
+def test_main_spricht_ha_nur_mit_url_token_und_dateien_an(monkeypatch, cfg, anzahl, erwartet_aufrufe):
+    aufrufe = []
+    monkeypatch.setattr(ha_deploy, "einstellungen", lambda: {"HA_BLUEPRINT_ZIEL": "/x", **cfg})
+    monkeypatch.setattr(ha_deploy, "kopieren", lambda ziel, trocken: anzahl)
+    monkeypatch.setattr(ha_deploy, "pruefen_und_neu_laden",
+                        lambda url, token, trocken: aufrufe.append(url) or 0)
+    assert ha_deploy.main([]) == 0
+    assert len(aufrufe) == erwartet_aufrufe
 
 
 def test_ohne_ziel_abbruch(monkeypatch, tmp_path):

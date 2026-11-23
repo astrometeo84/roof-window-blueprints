@@ -18,8 +18,10 @@ Blueprints sie nutzen:
   das macht ``native()`` nach.
 
 Beleg für die nachgebauten Funktionen: Skill ``sonnengeometrie``, Abschnitt 5.
-Weicht der Nachbau von HA ab, ist ein Test wertlos; deshalb prüft die CI
-zusätzlich mit echtem Home Assistant.
+Weicht der Nachbau von HA ab, ist ein Test wertlos. Die CI fängt das NICHT ab:
+``check_config`` prüft Aufbau und Schema, wertet aber keine Vorlage aus. Ob der
+Nachbau stimmt, zeigen nur der Beleg in der HA-Doku und die Live-Prüfung
+(docs/ENTWURF.md 7.5) bzw. der Test im echten HA (Skill ha-testen).
 """
 
 from __future__ import annotations

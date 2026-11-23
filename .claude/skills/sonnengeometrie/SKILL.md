@@ -173,5 +173,6 @@ Zusage für ältere Versionen.
   drei Teile Pflicht, z. B. `2022.4.0` (https://www.home-assistant.io/docs/blueprint/schema/).
 
 Die Tests bauen diese Funktionen in `tests/conftest.py` nach. Weicht der Nachbau von HA ab
-(z. B. Fehler statt Standardwert), ist der Test wertlos – daher prüft die CI zusätzlich mit
-echtem Home Assistant.
+(z. B. Fehler statt Standardwert), ist der Test wertlos. **Die CI fängt das nicht ab:**
+`check_config` prüft Aufbau und Schema, wertet aber keine Vorlage aus. Den Nachbau sichern nur
+der Beleg in der HA-Doku (hier) und der Vergleich im echten HA (Live-Prüfung, Skill `ha-testen`).

@@ -89,13 +89,17 @@ def test_blueprint_dateinamen_sind_eindeutig():
     assert not doppelt, f"Dateiname mehrfach unter blueprints/: {doppelt}"
 
 
-def test_dateinamen_test_greift(tmp_path):
-    """Gegenprobe für den Test darüber: Er würde doppelte Namen wirklich sehen."""
-    for art in ("automation", "template"):
-        (tmp_path / art).mkdir()
-        (tmp_path / art / "gleich.yaml").write_text("x: 1\n", encoding="utf-8")
-    namen = [p.name for p in sorted(tmp_path.glob("**/*.yaml"))]
-    assert Counter(namen)["gleich.yaml"] == 2
+def test_unter_blueprints_nur_yaml_dateien():
+    """Tests, check_version.py, Release-Upload und CI suchen alle nur ``*.yaml``.
+
+    Ein Blueprint ``x.yml`` fiele überall lautlos durch: nicht getestet, nicht
+    versioniert, nicht hochgeladen, von der CI nicht geladen.
+    """
+    if not BLUEPRINT_ORDNER.is_dir():
+        return
+    fremd = [p.relative_to(REPO).as_posix() for p in BLUEPRINT_ORDNER.rglob("*")
+             if p.is_file() and p.suffix != ".yaml"]
+    assert not fremd, f"unter blueprints/ nur .yaml erlaubt: {fremd}"
 
 
 # ==========================================================================

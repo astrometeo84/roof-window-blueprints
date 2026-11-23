@@ -1,0 +1,46 @@
+{
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Bash(uv run pytest:*)",
+      "Bash(uv run yamllint:*)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(git stash list:*)",
+      "WebFetch(domain:www.home-assistant.io)",
+      "WebFetch(domain:developers.home-assistant.io)",
+      "WebFetch(domain:github.com)"
+    ],
+    "deny": [
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(nc:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin HEAD:main:*)",
+      "Bash(git push origin main:main:*)",
+      "Bash(git push origin +main:*)",
+      "Bash(git push origin HEAD:refs/heads/main:*)",
+      "Bash(git push origin refs/heads/main:*)",
+      "Bash(git push -u origin main:*)",
+      "Bash(git push -u origin HEAD:main:*)",
+      "Bash(git push --set-upstream origin main:*)",
+      "Bash(git tag:*)",
+      "Bash(cat *.ha.env*)",
+      "Bash(head *.ha.env*)",
+      "Bash(tail *.ha.env*)",
+      "Bash(less *.ha.env*)",
+      "Bash(grep *.ha.env*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./.ha.env)"
+    ]
+  }
+}

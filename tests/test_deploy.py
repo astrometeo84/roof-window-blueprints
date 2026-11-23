@@ -168,12 +168,75 @@ def test_401_nennt_token_und_adminrechte(capsys):
     assert "Token" in ausgabe and "Adminrechte" in ausgabe
 
 
-def test_warnungen_der_pruefung_werden_gezeigt(capsys):
-    """Ein falscher use_blueprint-Pfad kommt bei Template-Blueprints nur als Warnung."""
+def test_warnungen_brechen_ab_und_laden_nichts(capsys):
+    """Ein falscher use_blueprint-Pfad kommt bei Template-Blueprints nur als Warnung.
+
+    Neu geladen würde dann gar nichts übernommen, und beim nächsten Neustart
+    fehlten ALLE Template-Entitäten aus YAML (Skill sonnengeometrie, 5).
+    Deshalb wie bei Fehlern: nichts neu laden, Exit-Code 1.
+    """
     ha = _Ha()
     ha.warnungen = "Template: Failed to load blueprint"
-    assert ha_deploy.pruefen_und_neu_laden("http://ha", "geheim", False, aufruf=ha) == 0
+    assert ha_deploy.pruefen_und_neu_laden("http://ha", "geheim", False, aufruf=ha) == 1
+    assert ha.pfade == ["/api/config/core/check_config"]
+    ausgabe = capsys.readouterr().out
+    assert "Failed to load blueprint" in ausgabe
+    assert "NICHTS neu geladen" in ausgabe
+    assert "--trotz-warnungen" in ausgabe
+
+
+def test_trotz_warnungen_laedt_bewusst_neu(capsys):
+    ha = _Ha()
+    ha.warnungen = "Template: Failed to load blueprint"
+    assert ha_deploy.pruefen_und_neu_laden("http://ha", "geheim", False, aufruf=ha,
+                                           trotz_warnungen=True) == 0
+    assert ha.pfade[1:] == ["/api/services/automation/reload", "/api/services/template/reload"]
     assert "Failed to load blueprint" in capsys.readouterr().out
+
+
+def test_trotz_warnungen_uebergeht_keine_fehler():
+    ha = _Ha(pruefung="invalid")
+    ha.warnungen = "auch noch eine Warnung"
+    assert ha_deploy.pruefen_und_neu_laden("http://ha", "geheim", False, aufruf=ha,
+                                           trotz_warnungen=True) == 1
+    assert ha.pfade == ["/api/config/core/check_config"]
+
+
+@pytest.mark.parametrize("argv,erwartet", [([], 1), (["--trotz-warnungen"], 0)])
+def test_main_endet_bei_warnungen_mit_1(monkeypatch, argv, erwartet):
+    """Durchlauf mit dem echten pruefen_und_neu_laden: Exit-Code kommt bei main an."""
+    ha = _Ha()
+    ha.warnungen = "Template: Failed to load blueprint"
+    monkeypatch.setattr(ha_deploy, "einstellungen",
+                        lambda: {"HA_BLUEPRINT_ZIEL": "/x", "HA_URL": "http://ha", "HA_TOKEN": "t"})
+    monkeypatch.setattr(ha_deploy, "kopieren", lambda ziel, trocken: 1)
+    monkeypatch.setattr(ha_deploy, "ha_aufruf", ha)
+    echt = ha_deploy.pruefen_und_neu_laden
+    monkeypatch.setattr(ha_deploy, "pruefen_und_neu_laden",
+                        lambda url, token, trocken, trotz_warnungen=False:
+                        echt(url, token, trocken, aufruf=ha, trotz_warnungen=trotz_warnungen))
+    assert ha_deploy.main(argv) == erwartet
+
+
+@pytest.mark.parametrize("leer", [None, "", []])
+def test_leere_warnungen_sind_keine(leer):
+    ha = _Ha()
+    ha.warnungen = leer
+    assert ha_deploy.pruefen_und_neu_laden("http://ha", "geheim", False, aufruf=ha) == 0
+    assert len(ha.pfade) == 3
+
+
+@pytest.mark.parametrize("argv,erwartet", [([], False), (["--trotz-warnungen"], True)])
+def test_main_reicht_trotz_warnungen_durch(monkeypatch, argv, erwartet):
+    gesehen = []
+    monkeypatch.setattr(ha_deploy, "einstellungen",
+                        lambda: {"HA_BLUEPRINT_ZIEL": "/x", "HA_URL": "http://ha", "HA_TOKEN": "t"})
+    monkeypatch.setattr(ha_deploy, "kopieren", lambda ziel, trocken: 1)
+    monkeypatch.setattr(ha_deploy, "pruefen_und_neu_laden",
+                        lambda url, token, trocken, trotz_warnungen=False:
+                        gesehen.append(trotz_warnungen) or 0)
+    assert ha_deploy.main(argv) == 0
+    assert gesehen == [erwartet]
 
 
 def test_gibt_weder_token_noch_adresse_aus(capsys):
@@ -184,6 +247,11 @@ def test_gibt_weder_token_noch_adresse_aus(capsys):
     # Echte Fehlertexte (etwa bei SSL) nennen oft den Host – genau das darf nicht durch.
     fehler = urllib.error.URLError("hostname '192.0.2.7' doesn't match certificate")
     ha_deploy.pruefen_und_neu_laden(url, token, False, aufruf=_Ha(fehler=fehler))
+    # Die beiden Pfade mit Warnungen: Abbruch und bewusstes Neuladen.
+    for trotz in (False, True):
+        mit_warnung = _Ha()
+        mit_warnung.warnungen = "Template: Failed to load blueprint"
+        ha_deploy.pruefen_und_neu_laden(url, token, False, aufruf=mit_warnung, trotz_warnungen=trotz)
     ausgabe = capsys.readouterr()
     for geheim in (token, "192.0.2.7"):
         assert geheim not in ausgabe.out + ausgabe.err
@@ -203,7 +271,7 @@ def test_main_spricht_ha_nur_mit_url_token_und_dateien_an(monkeypatch, cfg, anza
     monkeypatch.setattr(ha_deploy, "einstellungen", lambda: {"HA_BLUEPRINT_ZIEL": "/x", **cfg})
     monkeypatch.setattr(ha_deploy, "kopieren", lambda ziel, trocken: anzahl)
     monkeypatch.setattr(ha_deploy, "pruefen_und_neu_laden",
-                        lambda url, token, trocken: aufrufe.append(url) or 0)
+                        lambda url, token, trocken, trotz_warnungen=False: aufrufe.append(url) or 0)
     assert ha_deploy.main([]) == 0
     assert len(aufrufe) == erwartet_aufrufe
 

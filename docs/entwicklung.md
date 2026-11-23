@@ -68,7 +68,7 @@ geprüft, ob die Tests anschlagen.
 | 2 | `ha_deploy.py`: gescheitertes scp nicht abgefangen (Traceback mit Adresse) | `test_scp_fehler_ohne_adresse_und_mit_hinweis` |
 | 2 | `ha_deploy.py`: Antwort der Prüfung ohne dict gilt als gültig | `test_unerwartete_antwort_der_pruefung_laedt_nichts` |
 | 2 | `ha_deploy.py`: Neuladen schon mit `HA_URL` ohne `HA_TOKEN` | `test_main_spricht_ha_nur_mit_url_token_und_dateien_an` |
-| 2 | `ha_deploy.py`: Warnungen der Prüfung verschluckt | `test_warnungen_der_pruefung_werden_gezeigt` |
+| 2 | `ha_deploy.py`: Warnungen der Prüfung verschluckt | `test_warnungen_der_pruefung_werden_gezeigt` (in Etappe 3 abgelöst durch `test_warnungen_brechen_ab_und_laden_nichts`, prüft weiter die Ausgabe) |
 | 2 | `ha_deploy.py`: 401 ohne Hinweis auf Adminrechte | `test_401_nennt_token_und_adminrechte` |
 | 2 | Blueprint mit Endung `.yml` | `test_unter_blueprints_nur_yaml_dateien` |
 | 2 | Netzfehler-Text mit Hostnamen ausgegeben – **erst nicht erkannt** (Test nutzte Fehler ohne Host), Test nachgeschärft | `test_gibt_weder_token_noch_adresse_aus` |
@@ -95,6 +95,7 @@ geprüft, ob die Tests anschlagen.
 | 3 | `min_version` 2025.3.0 trotz `clamp` | `test_min_version_reicht_fuer_clamp` |
 | 3 | Attribut `azimut` zeigt die Neigung | `test_attribute_zeigen_die_eingaben` |
 | 3 | Fixture: falscher `path`, unbekannter Schlüssel, unbekannte Eingabe, fehlende Pflichteingabe | `test_fixture_template_instanzen_passen_zum_blueprint`, `test_fixture_je_template_blueprint_minimal_und_vollstaendig` |
+| 3 | `ha_deploy.py` lädt trotz Warnungen der Prüfung neu (alter Stand, per `git stash`) | `test_warnungen_brechen_ab_und_laden_nichts`, `test_trotz_warnungen_laedt_bewusst_neu`, `test_main_reicht_trotz_warnungen_durch` |
 | 3 | CI, PR #3: falscher `path` in der Fixture (Commit + Revert) – HA-Job rot (Exit-Code 1) | `test_fixture_template_instanzen_passen_zum_blueprint` und HA-Job |
 | 3 | CI, PR #3: unbekannter Schlüssel in einer Instanz (Commit + Revert) – **vom HA-Job nicht erkannt** (wie erwartet; nur Log-Meldung) | nur `test_fixture_template_instanzen_passen_zum_blueprint` |
 

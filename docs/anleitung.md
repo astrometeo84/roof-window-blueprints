@@ -16,7 +16,8 @@ Oberfläche eingerichtet, sondern in `configuration.yaml` unter `template:` mit 
    - aus dem Release: Datei am [GitHub-Release](../../../releases) herunterladen und dorthin
      kopieren (Samba-Freigabe, File-Editor- oder SSH-Add-on);
    - zum Ausprobieren eines Branches: `uv run scripts/ha_deploy.py` (Skill `ha-testen`) kopiert
-     genau an diese Stelle.
+     genau an diese Stelle, prüft und lädt neu. Meldet die Prüfung Warnungen, lädt das Skript
+     **nichts** neu und bricht ab (Grund: siehe „Achtung“ unten).
 2. In `configuration.yaml` unter `template:` eine Instanz anlegen. `path` ist relativ zu
    `blueprints/template/`.
 3. Konfiguration prüfen: Einstellungen → Werkzeuge (früher „Entwicklerwerkzeuge“) → YAML →

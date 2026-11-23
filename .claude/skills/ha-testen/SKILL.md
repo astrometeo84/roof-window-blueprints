@@ -50,9 +50,23 @@ Template-Blueprint trotzdem einmal bestätigen: kleine sichtbare Änderung (z. B
 deployen, in den Entwicklerwerkzeugen nachsehen. Ergebnis im Skill `sonnengeometrie` nachtragen.
 
 **Wichtig:** Die Konfigurationsprüfung meldet Fehler in Template-Blueprints nicht als Fehler:
-falscher Pfad oder fehlende Pflichteingabe nur als Warnung (zeigt `ha_deploy.py` an),
-unpassende Eingaben oder Optionen gar nicht – HA verwirft die Instanz still. Deshalb nach jedem Deploy
-Protokolle und Benachrichtigungen ansehen (Punkt 4) und prüfen, ob die Entität überhaupt da ist.
+falscher Pfad, fehlende Pflichteingabe oder unbekannter Schlüssel **unter** `use_blueprint:`
+nur als **Warnung**. Neu laden ändert dann nichts (der alte Stand bleibt), aber der **nächste
+Neustart** legt **alle** Template-Entitäten aus YAML lahm (Skill `sonnengeometrie`
+Abschnitt 5). `ha_deploy.py` behandelt Warnungen deshalb wie Fehler: Es zeigt sie, lädt
+**nichts** neu und endet mit Exit-Code 1 („Home Assistant meldet Warnungen, NICHTS neu
+geladen“). Dann Fehler beheben und erneut deployen – nicht HA neu starten, sonst werden die
+schon kopierten Dateien aktiv. Nur wer bewusst trotz Warnungen neu laden will:
+`uv run scripts/ha_deploy.py --trotz-warnungen`. Hat das HA des Nutzers schon vorher
+Warnungen (etwa eine entfernte Custom-Integration), bricht das Skript jedes Mal ab – dann erst
+diese beheben oder bewusst `--trotz-warnungen` nehmen.
+
+Ein unbekannter Schlüssel **auf Ebene der Instanz** (neben `use_blueprint`, `name`,
+`unique_id`) meldet die Prüfung gar nicht – HA verwirft nur diese Instanz und schreibt ins
+Protokoll. Ebenso still: falsch geschriebene Eingabenamen und Werte außerhalb des Selektors
+(laut Quelltext). Deshalb nach jedem
+Deploy Protokolle und Benachrichtigungen ansehen (Punkt 4) und prüfen, ob die Entität
+überhaupt da ist.
 
 Einstellungen stehen in `.ha.env` (Vorlage `.ha.env.example`), **nur auf dem PC des Nutzers**.
 Fehlt die Datei: dem Nutzer die Vorlage zeigen und ihn bitten, sie anzulegen. Den Inhalt nie

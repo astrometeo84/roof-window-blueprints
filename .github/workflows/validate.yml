@@ -1,0 +1,117 @@
+name: Validierung
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Die Job-Namen (name:) sind zugleich die erforderlichen Prüfungen im Ruleset.
+# Wer sie umbenennt, muss das Ruleset nachziehen, sonst wartet jeder PR ewig.
+
+jobs:
+  yamllint:
+    name: YAML-Stil
+    # Festgenagelt statt ubuntu-latest: Ein Wechsel der Ubuntu-Version kommt
+    # als eigener Commit mit eigener CI, nicht unbemerkt zwischen zwei Läufen.
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      # setup-uv mit vollständiger Versionsnummer: Seit v8.0.0 gibt es nur
+      # unveränderliche Releases und keine Major-Tags mehr (@v10 gibt es
+      # nicht). Änderungen v7 -> v10.4.0: docs/ENTWURF.md 6.5.
+      #
+      # Die uv-Version ist bewusst festgenagelt, gleich der lokalen uv
+      # (uv --version). Ohne Angabe nimmt setup-uv eine uv, die das Format der
+      # uv.lock womöglich nicht kennt und die Datei neu schreiben will – woran
+      # --locked scheitert, obwohl lokal alles stimmt. Beim Anheben der lokalen
+      # uv alle "version:"-Zeilen in beiden Workflows mitziehen.
+      #
+      # enable-cache ausdrücklich true: Der Standard "auto" schaltet den Cache
+      # seit v10 bei manchen Ereignissen ab; hier soll er immer laufen.
+      - uses: astral-sh/setup-uv@v10.4.0
+        with:
+          enable-cache: true
+          version: "0.13.8"
+      # --locked bricht ab, wenn uv.lock nicht zur pyproject.toml passt.
+      - run: uv run --locked yamllint --strict .
+
+  tests:
+    name: Tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.4.0
+        with:
+          enable-cache: true
+          version: "0.13.8"
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run pytest -v
+
+  home-assistant:
+    name: Home Assistant lädt die Blueprints
+    runs-on: ubuntu-26.04
+    env:
+      # "stable" bewusst: Geprüft wird gegen das aktuelle HA, wie es Nutzer
+      # der Blueprints haben.
+      HA_IMAGE: ghcr.io/home-assistant/home-assistant:stable
+    steps:
+      - uses: actions/checkout@v7
+
+      # Eine vollständige HA-Konfiguration bauen, die die Blueprints benutzt,
+      # und von Home Assistant prüfen lassen. Grenze: Schemafehler einer
+      # Template-Instanz verwirft HA still, der Job bleibt grün; Vorlagen
+      # wertet check_config nicht aus. Die eigentliche Sicherung sind die
+      # Tests (Skill sonnengeometrie, Abschnitt 5).
+      #
+      # nullglob: Solange ein Ordner leer ist (Etappe 2), kopiert cp nichts,
+      # statt am unaufgelösten Muster zu scheitern.
+      #
+      # secrets.yaml kopieren wir selbst; das hat früher
+      # frenck/action-home-assistant erledigt.
+      - name: Test-Konfiguration erzeugen
+        run: |
+          shopt -s nullglob
+          for art in automation template; do
+            mkdir -p "ha/blueprints/$art/dachfenster"
+            dateien=(blueprints/"$art"/dachfenster/*.yaml)
+            if (( ${#dateien[@]} )); then
+              cp "${dateien[@]}" "ha/blueprints/$art/dachfenster/"
+            fi
+          done
+          cp tests/fixtures/configuration.yaml ha/configuration.yaml
+          cp tests/fixtures/automations.yaml ha/automations.yaml
+          cp tests/fixtures/secrets.yaml ha/secrets.yaml
+          find ha -type f | sort
+
+      - name: Home-Assistant-Image laden
+        run: docker pull -q "$HA_IMAGE"
+
+      # Wie frenck/action-home-assistant, aber mit --fail-on-warnings – die
+      # Action reicht den Schalter nicht durch. Ohne ihn sind Ladefehler
+      # (falscher path, fehlende Pflichteingabe) nur Warnungen und der Job
+      # bleibt grün (docs/ENTWURF.md 6.1).
+      #
+      # --entrypoint "": Sonst startet das Image Home Assistant selbst, statt
+      # den Befehl auszuführen. Erst die Version fürs Log, dann die Prüfung.
+      #
+      # Kommen Warnungen von default_config statt von den Blueprints: die
+      # Fixture-Konfiguration auf die nötigen Integrationen verkleinern,
+      # Warnungen nicht unterdrücken.
+      - name: Konfiguration prüfen (Warnungen zählen als Fehler)
+        run: |
+          docker run --rm --entrypoint "" "$HA_IMAGE" \
+            python -m homeassistant --version
+          docker run --rm --entrypoint "" \
+            -v "$PWD/ha:/config" \
+            "$HA_IMAGE" \
+            python -m homeassistant --config /config \
+              --script check_config --fail-on-warnings

@@ -1,0 +1,148 @@
+# Version: 0.0.0 # x-release-please-version
+#
+# Die Zeile darüber pflegt release-please automatisch. Die Markierung
+# "x-release-please-version" nicht entfernen; scripts/check_version.py
+# prüft beim Release, dass sie zum Tag passt.
+#
+# Formeln, Zählweisen und Belege: Skill sonnengeometrie (Abschnitte 2, 3, 5).
+# Die Tests in tests/test_vorlagen.py rendern die Vorlagen unten direkt aus
+# dieser Datei; was hier als Kommentar begründet ist, bitte nicht „aufräumen“.
+blueprint:
+  name: Fläche – Sonneneinfall
+  description: >-
+    Einfallswinkel der Sonne auf eine beliebig ausgerichtete und geneigte
+    Fläche, z. B. ein Dachfenster oder eine Fassade.
+
+
+    **Zustand:** Einfallswinkel θ in Grad mit einer Nachkommastelle.
+    0° = Sonne steht senkrecht auf der Fläche, 90° = streifend,
+    über 90° = Sonne hinter der Fläche.
+
+
+    **Attribute:** `cos_einfall` (cos θ, vier Nachkommastellen),
+    `sonne_trifft_flaeche` (wahr, wenn die Sonne über dem Horizont steht und
+    vor der Fläche), `azimut` und `neigung` (die eingetragenen Werte).
+
+
+    **Gut zu wissen:** Der Sonnenstand kommt aus den Attributen von
+    `sun.sun` (Sun-Integration, Teil von `default_config`). Sie ändern sich am
+    Tag etwa alle 2–4 Minuten, nachts seltener; so oft rechnet auch dieser
+    Sensor neu. Fehlt der Sonnenstand, ist der Sensor nicht verfügbar.
+    Der Azimut zählt wie ein Kompass (0 = Nord, 90 = Ost, 180 = Süd,
+    270 = West) und meint die Richtung, in die die Fläche schaut.
+
+
+    Template-Blueprints werden in `configuration.yaml` unter `template:`
+    mit `use_blueprint:` eingebunden (Anleitung: docs/anleitung.md).
+  domain: template
+  author: astrometeo84
+  # Eigene Zeile, weil zu lang für yamllint (allow-non-breakable-words).
+  source_url: >-
+    https://github.com/astrometeo84/roof-window-blueprints/blob/main/blueprints/template/dachfenster/flaeche_sonneneinfall.yaml
+  homeassistant:
+    # clamp gibt es erst seit 2025.4; Template-Blueprints schon länger.
+    min_version: 2025.4.0
+  input:
+    # Beide Eingaben ohne Standardwert: Jede Fläche ist anders, ein
+    # Standardwert gäbe still falsche Winkel.
+    azimut:
+      name: Ausrichtung der Fläche (Azimut)
+      description: >-
+        Himmelsrichtung, in die die Fläche schaut, wie ein Kompass:
+        0 = Nord, 90 = Ost, 180 = Süd, 270 = West. Bei PV in derselben Ebene
+        steht der Wert meist in der Planung der Anlage.
+      selector:
+        number:
+          min: 0
+          max: 360
+          step: 0.1
+          unit_of_measurement: "°"
+          mode: box
+    neigung:
+      name: Neigung der Fläche
+      description: >-
+        0 = waagerecht, 90 = senkrecht. Bei einem Dachfenster die
+        Dachneigung.
+      selector:
+        number:
+          min: 0
+          max: 90
+          step: 0.1
+          unit_of_measurement: "°"
+          mode: box
+
+# Eingaben kommen über variables in die Vorlagen (so wie im Beispiel-Blueprint
+# von HA, template/blueprints/inverted_binary_sensor.yaml).
+variables:
+  azimut: !input azimut
+  neigung: !input neigung
+
+# Die Formel steht dreimal (Zustand, cos_einfall, sonne_trifft_flaeche): Eine
+# Vorlage kann das Ergebnis einer anderen nicht lesen, und blueprint-variables
+# werden bei zustandsbasierten Entitäten nur beim Laden ausgewertet, nicht bei
+# jeder Änderung des Sonnenstands. Ein Test prüft, dass alle drei gleich
+# rechnen.
+#
+# Gemeinsame Regeln in allen drei Vorlagen:
+# * Grad -> Bogenmaß mit pi / 180; HA kennt kein radians()/degrees().
+# * cos θ vor acos auf [-1, 1] begrenzen: Rundungsfehler ergeben sonst z. B.
+#   1.0000000000000002, und acos wirft. Kein acos(x, Standard): Das verdeckte
+#   eine fehlende Begrenzung still mit θ = 0° (volle Sonne). In cos_einfall
+#   fängt round(4) den Ausreißer ohnehin ab; die Begrenzung steht dort trotzdem,
+#   damit alle drei Vorlagen gleich aussehen und gleich rechnen.
+# * Fehlt der Sonnenstand oder ist er keine Zahl, kein Fehler und kein
+#   Fantasiewert, sondern none bzw. false; availability macht den Sensor dann
+#   nicht verfügbar.
+sensor:
+  unit_of_measurement: "°"
+  state_class: measurement
+  icon: mdi:sun-angle
+  availability: >-
+    {{ state_attr('sun.sun', 'elevation') is number
+       and state_attr('sun.sun', 'azimuth') is number }}
+  state: >-
+    {%- set h = state_attr('sun.sun', 'elevation') %}
+    {%- set a_s = state_attr('sun.sun', 'azimuth') %}
+    {%- if h is number and a_s is number %}
+      {%- set r = pi / 180 %}
+      {%- set beta = neigung | float %}
+      {%- set a_f = azimut | float %}
+      {%- set c = sin(h * r) * cos(beta * r)
+                  + cos(h * r) * sin(beta * r) * cos((a_s - a_f) * r) %}
+      {{ (acos(clamp(c, -1, 1)) / r) | round(1) }}
+    {%- else %}
+      {{ none }}
+    {%- endif %}
+  attributes:
+    cos_einfall: >-
+      {%- set h = state_attr('sun.sun', 'elevation') %}
+      {%- set a_s = state_attr('sun.sun', 'azimuth') %}
+      {%- if h is number and a_s is number %}
+        {%- set r = pi / 180 %}
+        {%- set beta = neigung | float %}
+        {%- set a_f = azimut | float %}
+        {%- set c = sin(h * r) * cos(beta * r)
+                    + cos(h * r) * sin(beta * r) * cos((a_s - a_f) * r) %}
+        {{ clamp(c, -1, 1) | round(4) }}
+      {%- else %}
+        {{ none }}
+      {%- endif %}
+    # Wahr nur, wenn die Sonne über dem Horizont steht (h > 0) UND vor der
+    # Fläche (cos θ > 0). Nachts kann cos θ > 0 sein. cos θ wird vor dem
+    # Vergleich auf vier Stellen gerundet: Streifendes Licht ergibt in
+    # Gleitkomma z. B. 6e-17 statt 0 und zählte sonst als „trifft“.
+    sonne_trifft_flaeche: >-
+      {%- set h = state_attr('sun.sun', 'elevation') %}
+      {%- set a_s = state_attr('sun.sun', 'azimuth') %}
+      {%- if h is number and a_s is number %}
+        {%- set r = pi / 180 %}
+        {%- set beta = neigung | float %}
+        {%- set a_f = azimut | float %}
+        {%- set c = sin(h * r) * cos(beta * r)
+                    + cos(h * r) * sin(beta * r) * cos((a_s - a_f) * r) %}
+        {{ h > 0 and (c | round(4)) > 0 }}
+      {%- else %}
+        {{ false }}
+      {%- endif %}
+    azimut: "{{ azimut }}"
+    neigung: "{{ neigung }}"

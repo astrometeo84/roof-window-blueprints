@@ -6,7 +6,19 @@ Verbindlich ist `docs/ENTWURF.md`, die Fachgrundlagen stehen im Skill
 
 ## Physik
 
-_Folgt mit den Template-Blueprints (Etappen 3 und 4)._
+### Fläche – Sonneneinfall (4.1)
+
+```
+cos θ = sin(h) · cos(β) + cos(h) · sin(β) · cos(A_s − A_f)
+θ     = acos(cos θ)
+```
+
+h und A_s aus den Attributen `elevation`/`azimuth` von `sun.sun`, β und A_f aus den Eingaben;
+alles in Grad, in der Vorlage mit `pi / 180` ins Bogenmaß. cos θ wird vor `acos` mit `clamp`
+auf [−1, 1] begrenzt. Eigenheiten (Rundungsrauschen bei 90°, h > 0, Formel dreimal im
+Blueprint, Verhalten ohne Sonnenstand) und Belege: Skill `sonnengeometrie`, Abschnitte 2 und 3.
+
+_Helligkeit aus PV (4.2) folgt in Etappe 4._
 
 ## Testaufbau
 
@@ -16,22 +28,30 @@ _Folgt mit den Template-Blueprints (Etappen 3 und 4)._
   `is_state`, `has_value`, `sin`, `cos`, `acos`, `pi`, `clamp`, `float` (mit HA-Verhalten: ohne
   Standardwert ist eine unbrauchbare Eingabe ein Fehler). `tests/test_vorlagen.py::TestNachbau`
   prüft den Nachbau selbst.
+- `conftest.py::blueprint_variablen` löst den Abschnitt `variables:` eines Blueprints auf wie
+  HA (`!input` → Wert der Eingabe, sonst Standardwert, sonst Fehler wie `MissingInput`).
 - `tests/test_struktur.py`: Versionskopf, Release-Kette, eindeutige Dateinamen, nur `.yaml`
-  unter `blueprints/`, Form der CI-Fixtures (die Prüfung der Eingaben je Blueprint – nur echte
-  Eingaben, vollständige und minimale Instanz, `use_blueprint`-Pfad – kommt mit dem ersten
-  Blueprint in Etappe 3), Zugangsdaten.
+  unter `blueprints/`, Kopfdaten und `min_version`, jede Eingabe deklariert und benutzt, eine
+  Entität je Template-Blueprint, Eingaben und Sensor-Optionen je Blueprint; CI-Fixtures: nur
+  erlaubte Schlüssel, `use_blueprint`-Pfad vorhanden, nur echte Eingaben, Pflichteingaben
+  belegt, je Template-Blueprint eine minimale und eine vollständige Instanz; Zugangsdaten.
+- `tests/test_vorlagen.py`: je Blueprint eine Klasse, die Zustand, Attribute und
+  `availability` aus der Blueprint-Datei rendert.
 - `tests/test_deploy.py`: `scripts/ha_deploy.py` ohne Netz.
 - Die CI lässt zusätzlich echtes Home Assistant die Konfiguration prüfen, mit
-  `--fail-on-warnings`. Grenze: Schemafehler einer Template-Instanz verwirft HA still, die CI
-  bleibt grün; Ladefehler (falscher `path`, fehlende Pflichteingabe) werden erst durch
-  `--fail-on-warnings` rot – laut Quelltext, Gegenprobe in Etappe 3 (Skill `sonnengeometrie`, Abschnitt 5); bei Automations-Blueprints
-  vermutlich ähnlich (Gegenprobe in Etappe 6). Vorlagen wertet `check_config` gar nicht aus; ob der Nachbau
+  `--fail-on-warnings`. Grenze: Schemafehler einer Template-Instanz (z. B. unbekannter
+  Schlüssel) verwirft HA, die CI bleibt grün, nur eine Meldung im Log – belegt (Gegenprobe
+  PR #3). Ladefehler werden erst durch `--fail-on-warnings` rot – für einen falschen `path`
+  belegt (Gegenprobe PR #3), für eine fehlende Pflichteingabe nur laut Quelltext (Skill
+  `sonnengeometrie`, Abschnitt 5). Bei Automations-Blueprints vermutlich ähnlich (Gegenprobe in
+  Etappe 6). Vorlagen wertet `check_config` gar nicht aus; ob der Nachbau
   in `conftest.py` zu HA passt, zeigt nur das echte HA. Die Tests sind die eigentliche Sicherung.
 
 ## Taugen die Tests etwas?
 
 Gegenproben: Code absichtlich kaputt gemacht (per `git stash` bzw. `git worktree`, nie
-`git checkout --`/`git restore`) und geprüft, ob die Tests anschlagen.
+`git checkout --`/`git restore`; Gegenproben der CI per Commit und Revert auf dem PR) und
+geprüft, ob die Tests anschlagen.
 
 | Etappe | Absichtlich eingebauter Fehler | Test, der anschlägt |
 |---|---|---|
@@ -48,7 +68,7 @@ Gegenproben: Code absichtlich kaputt gemacht (per `git stash` bzw. `git worktree
 | 2 | `ha_deploy.py`: gescheitertes scp nicht abgefangen (Traceback mit Adresse) | `test_scp_fehler_ohne_adresse_und_mit_hinweis` |
 | 2 | `ha_deploy.py`: Antwort der Prüfung ohne dict gilt als gültig | `test_unerwartete_antwort_der_pruefung_laedt_nichts` |
 | 2 | `ha_deploy.py`: Neuladen schon mit `HA_URL` ohne `HA_TOKEN` | `test_main_spricht_ha_nur_mit_url_token_und_dateien_an` |
-| 2 | `ha_deploy.py`: Warnungen der Prüfung verschluckt | `test_warnungen_der_pruefung_werden_gezeigt` |
+| 2 | `ha_deploy.py`: Warnungen der Prüfung verschluckt | `test_warnungen_der_pruefung_werden_gezeigt` (in Etappe 3 abgelöst durch `test_warnungen_brechen_ab_und_laden_nichts`, prüft weiter die Ausgabe) |
 | 2 | `ha_deploy.py`: 401 ohne Hinweis auf Adminrechte | `test_401_nennt_token_und_adminrechte` |
 | 2 | Blueprint mit Endung `.yml` | `test_unter_blueprints_nur_yaml_dateien` |
 | 2 | Netzfehler-Text mit Hostnamen ausgegeben – **erst nicht erkannt** (Test nutzte Fehler ohne Host), Test nachgeschärft | `test_gibt_weder_token_noch_adresse_aus` |
@@ -58,6 +78,30 @@ Gegenproben: Code absichtlich kaputt gemacht (per `git stash` bzw. `git worktree
 | 2 | Exit-Code verschluckt (`--fail-on-warnings \|\| true`, `continue-on-error: true`), `--entrypoint` nur im Kommentar am Zeilenende – **erst nicht erkannt** (Befund `test-manager`), Test nachgeschärft | `test_ha_job_prueft_mit_fail_on_warnings` |
 | 2 | `secrets.yaml` in falsches Ziel kopiert | `test_ha_job_prueft_mit_fail_on_warnings` |
 | 2 | Release-Workflow als `.yaml` mit `setup-uv@v10` – **erst nicht erkannt** (feste Dateinamen, still übersprungen), jetzt per Muster | `test_setup_uv_mit_vollstaendiger_version` |
+| 3 | Sonneneinfall: Begrenzung vor `acos` im Zustand entfernt | `test_cos_knapp_ueber_eins`, `test_cos_knapp_unter_minus_eins` |
+| 3 | Sonneneinfall: Begrenzung in `cos_einfall` entfernt – **nicht erkennbar**: `round(4)` macht aus 1.0000000000000002 ohnehin 1.0; die Begrenzung bleibt, damit die drei Vorlagen gleich rechnen (Kommentar im Blueprint) | – |
+| 3 | Sonneneinfall: Grad statt Bogenmaß | `test_testwerte_aus_dem_entwurf` und 14 weitere |
+| 3 | Sonneneinfall: Prüfung h > 0 entfernt | `test_nachts_trifft_keine_sonne_auch_wenn_cos_positiv`, `test_hoehe_genau_null_trifft_nicht`, `test_zustand_und_attribute_stimmen_ueberein` |
+| 3 | Sonneneinfall: h ≥ 0 statt h > 0 | `test_hoehe_genau_null_trifft_nicht` |
+| 3 | Sonneneinfall: cos θ vor dem Vergleich nicht gerundet | `test_rundungsrauschen_bei_90_grad_trifft_nicht` |
+| 3 | Sonneneinfall: vor dem Vergleich auf drei statt vier Stellen gerundet – **erst nicht erkannt** (Befund `test-manager`), Test ergänzt | `test_auf_vier_stellen_gerundet_nicht_weniger` |
+| 3 | Sonneneinfall: Rechenreihenfolge im Zustand geändert (`h * pi / 180` statt `h * r`), Ausreißer über 1 verschwinden – **erst nicht erkannt** (Tests prüften ihre Voraussetzung nicht, Befund `test-manager`), Voraussetzung jetzt mit der Vorlage selbst geprüft | `test_cos_knapp_ueber_eins`, `test_cos_knapp_unter_minus_eins` |
+| 3 | Sonneneinfall: `availability` immer wahr | `test_ohne_sonnenstand_nicht_verfuegbar_und_kein_fehler` |
+| 3 | Sonneneinfall: Prüfung auf Zahl im Zustand entfernt (Vorlagenfehler ohne Sonnenstand) | `test_ohne_sonnenstand_nicht_verfuegbar_und_kein_fehler` |
+| 3 | Sonneneinfall: im Zustand A_s + A_f statt A_s − A_f | `test_testwerte_aus_dem_entwurf`, `test_kompass_im_uhrzeigersinn`, `test_zustand_und_attribute_stimmen_ueberein` |
+| 3 | Sonneneinfall: Zustand nicht auf eine Stelle gerundet | `test_eine_nachkommastelle`, `test_neigung_90_senkrechte_fassade`, `test_azimut_0_und_360_sind_gleich` |
+| 3 | Sonneneinfall: Neigung und Azimut vertauscht | `test_testwerte_aus_dem_entwurf` und 9 weitere |
+| 3 | Sonneneinfall: Standardwert für `azimut` | `test_azimut_und_neigung_sind_pflicht`, `test_sonneneinfall_eingaben`, `test_fixture_je_template_blueprint_minimal_und_vollstaendig` |
+| 3 | `min_version` 2025.3.0 trotz `clamp` | `test_min_version_reicht_fuer_clamp` |
+| 3 | Attribut `azimut` zeigt die Neigung | `test_attribute_zeigen_die_eingaben` |
+| 3 | Fixture: falscher `path`, unbekannter Schlüssel, unbekannte Eingabe, fehlende Pflichteingabe | `test_fixture_template_instanzen_passen_zum_blueprint`, `test_fixture_je_template_blueprint_minimal_und_vollstaendig` |
+| 3 | `ha_deploy.py` lädt trotz Warnungen der Prüfung neu (alter Stand, per `git stash`) | `test_warnungen_brechen_ab_und_laden_nichts`, `test_trotz_warnungen_laedt_bewusst_neu`, `test_main_reicht_trotz_warnungen_durch` |
+| 3 | `ha_deploy.py`: `main` gibt 0 statt des Ergebnisses zurück – **erst nicht erkannt** (Befund `test-manager`), Test ergänzt | `test_main_endet_bei_warnungen_mit_1` |
+| 3 | `ha_deploy.py`: `--trotz-warnungen` übergeht auch Fehler – **erst nicht erkannt** (Befund `test-manager`), Test ergänzt | `test_trotz_warnungen_uebergeht_keine_fehler` |
+| 3 | `ha_deploy.py`: Adresse in der Ausgabe bei Warnungen – **erst nicht erkannt** (Befund `test-manager`), Test erweitert | `test_gibt_weder_token_noch_adresse_aus` |
+| 3 | `ha_deploy.py`: Abbruch bei Warnungen mit Exit-Code 0 | `test_warnungen_brechen_ab_und_laden_nichts`, `test_main_endet_bei_warnungen_mit_1` |
+| 3 | CI, PR #3: falscher `path` in der Fixture (Commit + Revert) – HA-Job rot (Exit-Code 1) | `test_fixture_template_instanzen_passen_zum_blueprint` und HA-Job |
+| 3 | CI, PR #3: unbekannter Schlüssel in einer Instanz (Commit + Revert) – **vom HA-Job nicht erkannt** (wie erwartet; nur Log-Meldung) | nur `test_fixture_template_instanzen_passen_zum_blueprint` |
 
 ## Workflows
 

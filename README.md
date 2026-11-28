@@ -11,15 +11,16 @@ Home-Assistant-Blueprints rund um ein Dachfenster (roof window, skylight) mit So
 - **Dachfenster offen – Warnung** (Automations-Blueprint): Meldung bei Regen, beim Weggehen, am Abend
   und bei Wetterwarnungen, solange das Fenster offen ist.
 
-> **Stand:** im Aufbau. Noch ist kein Blueprint veröffentlicht; die Liste oben beschreibt das Ziel
-> (`docs/ENTWURF.md`).
+> **Stand:** im Aufbau. Fertig ist „Fläche – Sonneneinfall“; die übrigen Punkte der Liste
+> beschreiben das Ziel (`docs/ENTWURF.md`). Noch ist kein Release veröffentlicht.
 
 ## Installation
 
-_Folgt mit dem ersten Blueprint._ Jede Blueprint-Datei hängt am jeweiligen
-[GitHub-Release](../../releases). Automations-Blueprints lassen sich über die Oberfläche importieren;
-Template-Blueprints werden in `configuration.yaml` unter `template:` mit `use_blueprint:`
-eingebunden (Anleitung in `docs/anleitung.md`).
+Jede Blueprint-Datei hängt am jeweiligen [GitHub-Release](../../releases).
+Template-Blueprints (Fläche – Sonneneinfall) werden nach `config/blueprints/template/dachfenster/`
+kopiert und in `configuration.yaml` unter `template:` mit `use_blueprint:` eingebunden; Beispiel
+und Erklärung der Werte in [`docs/anleitung.md`](docs/anleitung.md). Automations-Blueprints
+folgen.
 
 ## Voraussetzungen
 

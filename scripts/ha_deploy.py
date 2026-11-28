@@ -14,14 +14,23 @@ Domain; geänderte Blueprint-Dateien werden also ohne Neustart neu eingelesen
 
 Achtung: Die Konfigurationsprüfung meldet Fehler in Template-Blueprints NICHT
 als Fehler. Ein falscher Pfad oder eine fehlende Pflichteingabe kommt nur als
-Warnung (das Skript zeigt sie an); passen die Eingaben nicht zum Schema,
-verwirft HA den Abschnitt still und schreibt nur ins Protokoll bzw. eine
-Benachrichtigung. Nach dem Neuladen deshalb immer Protokoll und
-Benachrichtigungen ansehen.
+Warnung. Neu laden ändert dann nichts (der alte Stand bleibt), aber der
+nächste Neustart legt alle Template-Entitäten aus YAML lahm. Das Skript
+behandelt Warnungen deshalb wie Fehler: Es zeigt sie, lädt NICHTS neu und
+endet mit 1 (bewusst trotzdem: --trotz-warnungen). Ein unbekannter Schlüssel
+auf Ebene der Instanz (neben use_blueprint, name, unique_id) kommt dagegen
+gar nicht als Warnung: HA verwirft nur diese Instanz und schreibt ins
+Protokoll bzw. eine Benachrichtigung. Nach dem Neuladen deshalb immer
+Protokoll und Benachrichtigungen ansehen.
 
 Aufruf:
-    uv run scripts/ha_deploy.py            # kopieren, prüfen, neu laden
-    uv run scripts/ha_deploy.py --trocken  # nur anzeigen, was passieren würde
+    uv run scripts/ha_deploy.py                    # kopieren, prüfen, neu laden
+    uv run scripts/ha_deploy.py --trocken          # nur anzeigen, was passieren würde
+    uv run scripts/ha_deploy.py --trotz-warnungen  # auch bei Warnungen neu laden
+
+Die Dateien sind bei einem Abbruch schon kopiert; aktiv werden sie erst beim
+nächsten Neuladen oder Neustart. Deshalb den Fehler beheben und erneut
+deployen, nicht HA neu starten.
 
 Einstellungen kommen aus Umgebungsvariablen oder aus der Datei ``.ha.env``
 im Wurzelverzeichnis (steht in .gitignore, der Token gehört nicht ins Repo):
@@ -154,7 +163,8 @@ def ha_aufruf(url: str, token: str, pfad: str) -> object:
     return json.loads(text)
 
 
-def pruefen_und_neu_laden(url: str, token: str, trocken: bool, aufruf=ha_aufruf) -> int:
+def pruefen_und_neu_laden(url: str, token: str, trocken: bool, aufruf=ha_aufruf,
+                          trotz_warnungen: bool = False) -> int:
     print("prüfe Konfiguration, lade Automationen und Template-Entitäten neu")
     if trocken:
         return 0
@@ -165,11 +175,19 @@ def pruefen_und_neu_laden(url: str, token: str, trocken: bool, aufruf=ha_aufruf)
             print("Home Assistant meldet Fehler, NICHTS neu geladen:")
             print(ergebnis.get("errors") if isinstance(ergebnis, dict) else ergebnis)
             return 1
-        # Warnungen ausgeben: Genau hier meldet HA einen falschen use_blueprint-Pfad
-        # oder eine fehlende Pflichteingabe eines Template-Blueprints – als Warnung,
-        # nicht als Fehler (Skill sonnengeometrie, Abschnitt 5).
+        # Warnungen zählen wie Fehler: Genau hier meldet HA einen falschen
+        # use_blueprint-Pfad oder eine fehlende Pflichteingabe eines
+        # Template-Blueprints – als Warnung, nicht als Fehler. Neu laden änderte
+        # dann nichts (alter Stand bleibt), aber der nächste Neustart legt ALLE
+        # Template-Entitäten aus YAML lahm (Skill sonnengeometrie, Abschnitt 5).
+        # Bewusst trotzdem: --trotz-warnungen.
         if ergebnis.get("warnings"):
-            print("Home Assistant meldet Warnungen (trotzdem neu geladen):")
+            if not trotz_warnungen:
+                print("Home Assistant meldet Warnungen, NICHTS neu geladen:")
+                print(ergebnis["warnings"])
+                print("Erst beheben. Bewusst trotzdem neu laden: --trotz-warnungen")
+                return 1
+            print("Home Assistant meldet Warnungen (--trotz-warnungen: trotzdem neu geladen):")
             print(ergebnis["warnings"])
         for pfad in NEU_LADEN:
             aufruf(url, token, pfad)
@@ -192,6 +210,8 @@ def pruefen_und_neu_laden(url: str, token: str, trocken: bool, aufruf=ha_aufruf)
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--trocken", action="store_true", help="nichts ändern, nur anzeigen")
+    parser.add_argument("--trotz-warnungen", action="store_true",
+                        help="auch bei Warnungen der Konfigurationsprüfung neu laden")
     args = parser.parse_args(argv)
 
     cfg = einstellungen()
@@ -204,7 +224,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if cfg.get("HA_URL") and cfg.get("HA_TOKEN"):
-        return pruefen_und_neu_laden(cfg["HA_URL"], cfg["HA_TOKEN"], args.trocken)
+        return pruefen_und_neu_laden(cfg["HA_URL"], cfg["HA_TOKEN"], args.trocken,
+                                     trotz_warnungen=args.trotz_warnungen)
     print("Kein HA_URL/HA_TOKEN: Automationen und Template-Entitäten von Hand neu laden.")
     return 0
 

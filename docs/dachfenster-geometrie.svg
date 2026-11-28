@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1680 860" width="1680" height="860" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif">
+<defs><marker id="pfeil-braun" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0.8 L10,5 L0,9.2 z" fill="#3E2723"/></marker><marker id="pfeil-grau" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0.8 L10,5 L0,9.2 z" fill="#37474F"/></marker><marker id="pfeil-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0.8 L10,5 L0,9.2 z" fill="#E65100"/></marker><marker id="pfeil-gelb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0.8 L10,5 L0,9.2 z" fill="#F9A825"/></marker><linearGradient id="luxskala" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#CFD8DC"/><stop offset="0.2" stop-color="#FFF9C4"/><stop offset="0.4" stop-color="#FFE082"/><stop offset="1" stop-color="#F9A825"/></linearGradient></defs>
+<rect x="0" y="0" width="1680" height="860" fill="#ffffff"/>
+<text x="30" y="38" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="26" font-weight="bold" fill="#1f2933" text-anchor="start" dominant-baseline="central">Dachfenster: Ausrichtung, Neigung und Sonneneinfall</text>
+<text x="30" y="66" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" fill="#455A64" text-anchor="start" dominant-baseline="central">Stand 27.11.2026 · schematisch, Beispielwerte · Werte je Fläche in die Instanz des Blueprints eintragen · Kompass: 0 = Nord, 90 = Ost, 180 = Süd, 270 = West</text>
+<rect x="30" y="110" width="520" height="600" rx="10" fill="#FFFDE7" stroke="#F9A825" stroke-width="2"/>
+<path d="M30,120 a10,10 0 0 1 10,-10 h500 a10,10 0 0 1 10,10 v38 h-520 z" fill="#F9A825"/>
+<text x="44" y="127" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="17" font-weight="bold" fill="#3E2723" text-anchor="start" dominant-baseline="central">Ausrichtung der Dachfläche</text>
+<text x="44" y="146" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#3E2723" text-anchor="start" dominant-baseline="central">Draufsicht · Beispiel: Dachfläche nach Süden</text>
+<rect x="80" y="230" width="250" height="120" rx="0" fill="#ECEFF1" stroke="#90A4AE" stroke-width="1.2"/>
+<rect x="80" y="350" width="250" height="120" rx="0" fill="#FFF9C4" stroke="#F9A825" stroke-width="1.5"/>
+<path d="M80,350 L330,350" fill="none" stroke="#78909C" stroke-width="3" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="205" y="290" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#90A4AE" text-anchor="middle" dominant-baseline="central">Nordseite</text>
+<text x="338" y="350" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#546E7A" text-anchor="start" dominant-baseline="central">First</text>
+<text x="86" y="482" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#546E7A" text-anchor="start" dominant-baseline="central">Traufe</text>
+<text x="200" y="369" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" font-weight="bold" fill="#37474F" text-anchor="middle" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">Dachfenster</text>
+<rect x="180" y="383" width="40" height="40" rx="2" fill="#90CAF9" stroke="#42A5F5" stroke-width="1.5"/>
+<rect x="240" y="378" width="40" height="28" rx="1" fill="#455A64" stroke="#263238" stroke-width="1"/>
+<path d="M260,380 L260,404" fill="none" stroke="#78909C" stroke-width="0.8" stroke-linecap="butt" stroke-linejoin="round"/>
+<rect x="240" y="410" width="40" height="28" rx="1" fill="#455A64" stroke="#263238" stroke-width="1"/>
+<path d="M260,412 L260,436" fill="none" stroke="#78909C" stroke-width="0.8" stroke-linecap="butt" stroke-linejoin="round"/>
+<rect x="284" y="378" width="40" height="28" rx="1" fill="#455A64" stroke="#263238" stroke-width="1"/>
+<path d="M304,380 L304,404" fill="none" stroke="#78909C" stroke-width="0.8" stroke-linecap="butt" stroke-linejoin="round"/>
+<rect x="284" y="410" width="40" height="28" rx="1" fill="#455A64" stroke="#263238" stroke-width="1"/>
+<path d="M304,412 L304,436" fill="none" stroke="#78909C" stroke-width="0.8" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="282" y="452" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" font-weight="bold" fill="#37474F" text-anchor="middle" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">PV, gleiche Fläche</text>
+<path d="M200,403 L200,585" fill="none" stroke="#3E2723" stroke-width="3" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#pfeil-braun)"/>
+<text x="212" y="520" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12.5" font-weight="bold" fill="#3E2723" text-anchor="start" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">A_f  Ausrichtung der Fläche</text>
+<text x="212" y="538" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12.5" fill="#3E2723" text-anchor="start" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">= Blick nach draußen</text>
+<text x="212" y="556" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12.5" fill="#3E2723" text-anchor="start" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">hier: Süden = 180°</text>
+<path d="M113.5,552.8 L200,403" fill="none" stroke="#F9A825" stroke-width="2" stroke-linecap="butt" stroke-linejoin="round" stroke-dasharray="5 4"/>
+<path d="M122,567.5 L129,567.5" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M117,579.6 L122,584.5" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M105,584.5 L105,591.5" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M93,579.6 L88,584.5" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M88,567.5 L81,567.5" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M93,555.5 L88,550.6" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M105,550.5 L105,543.5" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M117,555.5 L122,550.6" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="105" cy="567.5" r="13" fill="#FBC02D" stroke="#F9A825" stroke-width="1.5"/>
+<text x="44" y="609.5" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#5D4037" text-anchor="start" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">A_s  Sonnenazimut = 210°</text>
+<path d="M200,495 A92,92 0 0 1 154,482.7" fill="none" stroke="#5D4037" stroke-width="1.5"/>
+<text x="170" y="515" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" font-weight="bold" fill="#5D4037" text-anchor="middle" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">Δ = 30°</text>
+<circle cx="448" cy="238" r="38" fill="#FFFFFF" stroke="#8D6E63" stroke-width="1.5"/>
+<path d="M448,209 L448,200" fill="none" stroke="#8D6E63" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M468.5,217.5 L474.9,211.1" fill="none" stroke="#8D6E63" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M477,238 L486,238" fill="none" stroke="#8D6E63" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M468.5,258.5 L474.9,264.9" fill="none" stroke="#8D6E63" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M448,267 L448,276" fill="none" stroke="#8D6E63" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M427.5,258.5 L421.1,264.9" fill="none" stroke="#8D6E63" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M419,238 L410,238" fill="none" stroke="#8D6E63" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M427.5,217.5 L421.1,211.1" fill="none" stroke="#8D6E63" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M448,210 L455,238 L448,244 L441,238 z" fill="#B71C1C"/>
+<path d="M448,266 L455,238 L448,232 L441,238 z" fill="#90A4AE"/>
+<text x="448" y="188" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#3E2723" text-anchor="middle" dominant-baseline="central">N · 0°</text>
+<text x="448" y="289" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#3E2723" text-anchor="middle" dominant-baseline="central">S · 180°</text>
+<text x="494" y="238" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#3E2723" text-anchor="start" dominant-baseline="central">O · 90°</text>
+<text x="402" y="238" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#3E2723" text-anchor="end" dominant-baseline="central">W · 270°</text>
+<rect x="350" y="376" width="190" height="88" rx="8" fill="#FFFFFF" stroke="#F9A825" stroke-width="1.2"/>
+<text x="362" y="394" font-family="Consolas, 'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="12.5" font-weight="bold" fill="#3E2723" text-anchor="start" dominant-baseline="central">Δ = A_s − A_f</text>
+<text x="362" y="414" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#5D4037" text-anchor="start" dominant-baseline="central">Δ = 0°: Sonne genau von vorn</text>
+<text x="362" y="432" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#5D4037" text-anchor="start" dominant-baseline="central">Δ = ±90°: Sonne von der Seite</text>
+<text x="362" y="450" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11" fill="#5D4037" text-anchor="start" dominant-baseline="central">A_s, A_f ab Nord im Uhrzeigersinn</text>
+<text x="44" y="652" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#37474F" text-anchor="start" dominant-baseline="central">A_f: rechtwinklig zur Traufe, Blick nach draußen.</text>
+<text x="44" y="670" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#37474F" text-anchor="start" dominant-baseline="central">Am einfachsten aus SFML übernehmen (Panelgruppe der Fensterseite).</text>
+<text x="44" y="688" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#37474F" text-anchor="start" dominant-baseline="central">A_s liefert Home Assistant laufend über sun.sun (Attribut azimuth).</text>
+<rect x="570" y="110" width="580" height="600" rx="10" fill="#ECEFF1" stroke="#546E7A" stroke-width="2"/>
+<path d="M570,120 a10,10 0 0 1 10,-10 h560 a10,10 0 0 1 10,10 v38 h-580 z" fill="#546E7A"/>
+<text x="584" y="127" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="17" font-weight="bold" fill="#ffffff" text-anchor="start" dominant-baseline="central">Schnitt durch die Dachfläche</text>
+<text x="584" y="146" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#ffffff" text-anchor="start" dominant-baseline="central">Neigung β, Sonnenhöhe h und Einfallswinkel θ</text>
+<path d="M680,600 L680,640" fill="none" stroke="#546E7A" stroke-width="3" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M680,640 L1135,640" fill="none" stroke="#546E7A" stroke-width="3" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="1132" y="624" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#90A4AE" text-anchor="end" dominant-baseline="central">Raum</text>
+<text x="590" y="560" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#90A4AE" text-anchor="start" dominant-baseline="central">draußen</text>
+<path d="M658.6,618 L971.1,355.7" fill="none" stroke="#B0BEC5" stroke-width="16" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M658.6,618 L971.1,355.7" fill="none" stroke="#78909C" stroke-width="1" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M796.4,502.3 L860.5,448.6" fill="none" stroke="#90CAF9" stroke-width="9" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M796.4,502.3 L860.5,448.6" fill="none" stroke="#42A5F5" stroke-width="1" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M832.4,456.5 L852.8,439.4" fill="none" stroke="#FB8C00" stroke-width="7" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M904,377 L855.5,439.8" fill="none" stroke="#E65100" stroke-width="1" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="907" y="377" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#E65100" text-anchor="start" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">Solar-Rollladen (außen)</text>
+<text x="971.1" y="339.7" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#546E7A" text-anchor="middle" dominant-baseline="central">First</text>
+<text x="823.5" y="517.4" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" font-weight="bold" fill="#37474F" text-anchor="middle" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">Dachfenster</text>
+<path d="M680,600 L790,600" fill="none" stroke="#546E7A" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round" stroke-dasharray="4 4"/>
+<path d="M746,600 A66,66 0 0 0 730.6,557.6" fill="none" stroke="#5D4037" stroke-width="1.5"/>
+<text x="760" y="574" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#5D4037" text-anchor="start" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">β  Neigung = Dachneigung</text>
+<path d="M828.5,475.4 L722.4,349" fill="none" stroke="#37474F" stroke-width="1.6" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#pfeil-grau)"/>
+<text x="722.4" y="317" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#37474F" text-anchor="middle" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">Flächennormale</text>
+<text x="722.4" y="333" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#546E7A" text-anchor="middle" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">senkrecht zur Scheibe</text>
+<path d="M652.7,411.5 L832.2,476.8" fill="none" stroke="#F9A825" stroke-width="2.2" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#pfeil-gelb)"/>
+<path d="M828.5,475.4 L1072.8,564.4" fill="none" stroke="#F9A825" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="round" stroke-dasharray="5 4"/>
+<path d="M652.8,405.3 L659.8,405.3" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M647.8,417.3 L652.8,422.3" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M635.8,422.3 L635.8,429.3" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M623.8,417.3 L618.9,422.3" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M618.8,405.3 L611.8,405.3" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M623.8,393.3 L618.9,388.3" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M635.8,388.3 L635.8,381.3" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M647.8,393.3 L652.8,388.3" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="635.8" cy="405.3" r="13" fill="#FBC02D" stroke="#F9A825" stroke-width="1.5"/>
+<text x="668" y="396" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#E65100" text-anchor="start" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">Sonnenstrahl</text>
+<path d="M828.5,475.4 L688.5,475.4" fill="none" stroke="#546E7A" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round" stroke-dasharray="4 4"/>
+<path d="M713.5,475.4 A115,115 0 0 1 720.4,436.1" fill="none" stroke="#5D4037" stroke-width="1.5"/>
+<text x="682.5" y="463.4" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" font-weight="bold" fill="#5D4037" text-anchor="end" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">h  Sonnenhöhe</text>
+<path d="M788.6,427.9 A62,62 0 0 0 770.2,454.2" fill="none" stroke="#B71C1C" stroke-width="2"/>
+<text x="759.7" y="427.2" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="15" font-weight="bold" fill="#B71C1C" text-anchor="middle" dominant-baseline="central" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" paint-order="stroke">θ</text>
+<rect x="832" y="172" width="304" height="122" rx="8" fill="#FFFFFF" stroke="#90A4AE" stroke-width="1.2"/>
+<text x="846" y="192" font-family="Consolas, 'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="12" font-weight="bold" fill="#263238" text-anchor="start" dominant-baseline="central">cos θ = sin h · cos β</text>
+<text x="889" y="212" font-family="Consolas, 'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="12" font-weight="bold" fill="#263238" text-anchor="start" dominant-baseline="central">+ cos h · sin β · cos Δ</text>
+<text x="846" y="236" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">θ Einfallswinkel: Sonnenstrahl ↔ Flächennormale</text>
+<text x="846" y="258" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#37474F" text-anchor="start" dominant-baseline="central">Sonne trifft die Scheibe:</text>
+<text x="846" y="276" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12.5" font-weight="bold" fill="#B71C1C" text-anchor="start" dominant-baseline="central">h &gt; 0 und cos θ &gt; 0</text>
+<text x="584" y="664" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">θ = 0°: senkrecht auf die Scheibe · 90°: streifend · über 90°: Sonne hinter der Fläche</text>
+<text x="584" y="682" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">Beispiel im Bild: β = 40°, Sonne von vorn (Δ = 0°) mit h = 20° → θ = 30°</text>
+<text x="584" y="700" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">β z. B. aus SFML · h liefert Home Assistant über sun.sun (Attribut elevation)</text>
+<rect x="1170" y="110" width="480" height="600" rx="10" fill="#FFF4E6" stroke="#E65100" stroke-width="2"/>
+<path d="M1170,120 a10,10 0 0 1 10,-10 h460 a10,10 0 0 1 10,10 v38 h-480 z" fill="#E65100"/>
+<text x="1184" y="127" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="17" font-weight="bold" fill="#ffffff" text-anchor="start" dominant-baseline="central">Helligkeit aus der PV</text>
+<text x="1184" y="146" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#ffffff" text-anchor="start" dominant-baseline="central">Die PV liegt in derselben Ebene und misst, was auf die Scheibe fällt</text>
+<rect x="1200" y="185" width="420" height="60" rx="6" fill="#FFFFFF" stroke="#E65100" stroke-width="1.4"/>
+<text x="1214" y="204" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" font-weight="bold" fill="#263238" text-anchor="start" dominant-baseline="central">PV-Leistung (DC) der Fensterseite</text>
+<text x="1214" y="226" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13.5" fill="#37474F" text-anchor="start" dominant-baseline="central">P = 4 kW (Beispiel bei 10 kWp)</text>
+<rect x="1200" y="300" width="420" height="60" rx="6" fill="#FFFFFF" stroke="#E65100" stroke-width="1.4"/>
+<text x="1214" y="319" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" font-weight="bold" fill="#263238" text-anchor="start" dominant-baseline="central">Einstrahlung auf die Fläche</text>
+<text x="1214" y="341" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13.5" fill="#37474F" text-anchor="start" dominant-baseline="central">G = P / (kWp · PR) · 1000 = 500 W/m²</text>
+<rect x="1200" y="415" width="420" height="60" rx="6" fill="#FFFFFF" stroke="#E65100" stroke-width="1.4"/>
+<text x="1214" y="434" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" font-weight="bold" fill="#263238" text-anchor="start" dominant-baseline="central">Helligkeit auf der Fläche</text>
+<text x="1214" y="456" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13.5" font-weight="bold" fill="#BF360C" text-anchor="start" dominant-baseline="central">E ≈ G · 110 = 55 000 lx</text>
+<path d="M1240,249 L1240,297" fill="none" stroke="#E65100" stroke-width="1.8" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#pfeil-orange)"/>
+<text x="1256" y="264" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12.5" font-weight="bold" fill="#BF360C" text-anchor="start" dominant-baseline="central">PR = 0,8 (Performance Ratio)</text>
+<text x="1256" y="282" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#546E7A" text-anchor="start" dominant-baseline="central">Verluste durch Wechselrichter, Wärme, Leitungen</text>
+<path d="M1240,364 L1240,412" fill="none" stroke="#E65100" stroke-width="1.8" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#pfeil-orange)"/>
+<text x="1256" y="379" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12.5" font-weight="bold" fill="#BF360C" text-anchor="start" dominant-baseline="central">110 lx pro W/m²</text>
+<text x="1256" y="397" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#546E7A" text-anchor="start" dominant-baseline="central">Lichtausbeute des Sonnenlichts (grob 100–120)</text>
+<text x="1200" y="500" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12.5" font-weight="bold" fill="#263238" text-anchor="start" dominant-baseline="central">Einordnung</text>
+<rect x="1200" y="520" width="420" height="20" rx="3" fill="url(#luxskala)" stroke="#90A4AE" stroke-width="1"/>
+<path d="M1200,540 L1200,547" fill="none" stroke="#546E7A" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="1200" y="557" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11" fill="#455A64" text-anchor="start" dominant-baseline="central">0</text>
+<path d="M1284,540 L1284,547" fill="none" stroke="#546E7A" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="1284" y="557" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11" fill="#455A64" text-anchor="middle" dominant-baseline="central">20 000</text>
+<path d="M1368,540 L1368,547" fill="none" stroke="#546E7A" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="1368" y="557" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11" fill="#455A64" text-anchor="middle" dominant-baseline="central">40 000</text>
+<path d="M1620,540 L1620,547" fill="none" stroke="#546E7A" stroke-width="1.2" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="1620" y="557" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11" fill="#455A64" text-anchor="end" dominant-baseline="central">100 000 lx</text>
+<path d="M1368,514 L1368,546" fill="none" stroke="#BF360C" stroke-width="2" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="1242" y="575" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#546E7A" text-anchor="middle" dominant-baseline="central">bedeckt</text>
+<text x="1368" y="575" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" font-weight="bold" fill="#BF360C" text-anchor="middle" dominant-baseline="central">Schwelle</text>
+<text x="1502.4" y="575" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#546E7A" text-anchor="middle" dominant-baseline="central">direkte Sonne</text>
+<path d="M1425,511 L1437,511 L1431,519 z" fill="#263238"/>
+<text x="1431" y="502" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11" font-weight="bold" fill="#263238" text-anchor="middle" dominant-baseline="central">Beispiel</text>
+<text x="1184" y="616" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#37474F" text-anchor="start" dominant-baseline="central">Nur Module derselben Ebene wie das Fenster,</text>
+<text x="1184" y="634" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#37474F" text-anchor="start" dominant-baseline="central">DC-Leistung vor dem Wechselrichter, nicht die Einspeisung.</text>
+<text x="1184" y="652" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#37474F" text-anchor="start" dominant-baseline="central">Zu niedrig bei Nulleinspeisung mit vollem Akku,</text>
+<text x="1184" y="670" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#37474F" text-anchor="start" dominant-baseline="central">bei Schnee oder Teilverschattung der Module.</text>
+<text x="1184" y="688" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12" fill="#37474F" text-anchor="start" dominant-baseline="central">Die Umrechnung ist eine Schätzung (etwa ±15 %).</text>
+<rect x="20" y="730" width="1640" height="110" rx="10" fill="#FAFAFA" stroke="#CFD8DC" stroke-width="1"/>
+<text x="36" y="752" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="14" font-weight="bold" fill="#263238" text-anchor="start" dominant-baseline="central">Startwerte der Beschattung (ENTWURF 4.3 · Blueprint und Rechenweg der Position folgen in Etappe 7)</text>
+<rect x="36" y="770" width="145.8" height="30" rx="6" fill="#FFE0B2" stroke="#FB8C00" stroke-width="1.2"/>
+<text x="46" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">max. Einfallswinkel</text>
+<text x="152.1" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" font-weight="bold" fill="#102027" text-anchor="start" dominant-baseline="central">60°</text>
+<rect x="191.8" y="770" width="185.4" height="30" rx="6" fill="#FFE0B2" stroke="#FB8C00" stroke-width="1.2"/>
+<text x="201.8" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">Helligkeits-Schwelle</text>
+<text x="313" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" font-weight="bold" fill="#102027" text-anchor="start" dominant-baseline="central">40 000 lx</text>
+<rect x="387.2" y="770" width="170.3" height="30" rx="6" fill="#FFE0B2" stroke="#FB8C00" stroke-width="1.2"/>
+<text x="397.2" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">Temperatur-Freigabe</text>
+<text x="514.9" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" font-weight="bold" fill="#102027" text-anchor="start" dominant-baseline="central">23 °C</text>
+<rect x="567.5" y="770" width="213" height="30" rx="6" fill="#FFE0B2" stroke="#FB8C00" stroke-width="1.2"/>
+<text x="577.5" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">Position</text>
+<text x="627.4" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" font-weight="bold" fill="#102027" text-anchor="start" dominant-baseline="central">folgt dem Sonnenstand</text>
+<rect x="790.5" y="770" width="135.5" height="30" rx="6" fill="#FFE0B2" stroke="#FB8C00" stroke-width="1.2"/>
+<text x="800.5" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">Position offen</text>
+<text x="879.2" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" font-weight="bold" fill="#102027" text-anchor="start" dominant-baseline="central">100 %</text>
+<rect x="936" y="770" width="208" height="30" rx="6" fill="#FFE0B2" stroke="#FB8C00" stroke-width="1.2"/>
+<text x="946" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="11.5" fill="#37474F" text-anchor="start" dominant-baseline="central">Verzögerung ein / aus</text>
+<text x="1067.5" y="785" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="13" font-weight="bold" fill="#102027" text-anchor="start" dominant-baseline="central">10 / 30 min</text>
+<text x="36" y="822" font-family="Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif" font-size="12.5" fill="#37474F" text-anchor="start" dominant-baseline="central">Raumtemperatur ist nur Freigabe, kein Auslöser · einen von Hand weiter geschlossenen Rollladen nie hochfahren · wenige Fahrten pro Tag (Solar-Akku) · Position: 100 = offen, 0 = zu</text>
+</svg>
